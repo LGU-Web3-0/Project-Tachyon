@@ -13,9 +13,21 @@ jobs:
           toolchain: nightly
       - uses: actions-rs/cargo@v1
         with:
+          command: miri
+          args: setup
+      - uses: actions-rs/cargo@v1
+        with:
           command: build
           args: --all-features
       - uses: actions-rs/cargo@v1
         with:
           command: build
           args: --release --all-features
+      - uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: --release --all-features
+      - uses: actions-rs/cargo@v1
+        with:
+          command: miri 
+          args: test --release --all-features
