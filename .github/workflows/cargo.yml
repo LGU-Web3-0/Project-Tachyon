@@ -1,6 +1,6 @@
 on: [push]
 
-name: Build
+name: Build and Tests
 
 jobs:
   build_and_test:
@@ -11,10 +11,11 @@ jobs:
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: nightly
-      - uses: actions-rs/cargo@v1
-        with:
-          command: miri
-          args: setup
+      - name: Install Miri
+        run: |
+          rustup toolchain install nightly --component miri
+          rustup override set nightly
+          cargo miri setup
       - uses: actions-rs/cargo@v1
         with:
           command: build
