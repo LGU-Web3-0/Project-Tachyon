@@ -18,6 +18,10 @@ jobs:
           cargo miri setup
       - uses: actions-rs/cargo@v1
         with:
+          command: miri
+          args: setup
+      - uses: actions-rs/cargo@v1
+        with:
           command: build
           args: --all-features
       - uses: actions-rs/cargo@v1
