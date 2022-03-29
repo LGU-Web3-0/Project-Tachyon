@@ -15,7 +15,7 @@ impl<T> LoggedUnwrap for Result<T> {
     type Output = T;
 
     fn logged_unwrap(self) -> Self::Output {
-        match self.into() {
+        match self {
             Ok(x) => x,
             Err(y) => {
                 let bt = std::backtrace::Backtrace::force_capture();
