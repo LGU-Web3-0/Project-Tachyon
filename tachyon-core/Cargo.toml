@@ -1,0 +1,59 @@
+[package]
+name = "tachyon-core"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+# Utils
+lazy_static = "1"
+clap = {version = "3.1", features = ["derive", "wrap_help", "env", "unicode", "std", "color", "suggestions"]}
+serde = {version = "1", features = ["derive", "unstable", "alloc", "rc"]}
+async-trait = "0.1"
+simd-json = "0.4"
+mimalloc-rust = "0.1"
+anyhow = "1.0"
+thiserror = "1.0"
+log = "0.4"
+env_logger = "0.9"
+uuid = { version = "0.8", features = ["serde", "v4"] }
+toml = "0.5"
+chrono = { version = "0.4", features = ["serde"] }
+mime = "0.3"
+
+# Object Storage
+sled = { version = "0.34", features = [ "io_uring" ] }
+
+# Runtime
+tokio = {version = "1.17", features = ["full"]}
+tokio-uring = "0.3"
+futures = {version = "0.3"}
+
+# Server
+actix = "0.13"
+actix-web = { version = "4.0", features = ["experimental-io-uring", "rustls"] }
+actix-server = { version = "2.1", features = ["io-uring"] }
+actix-rt = { version = "2.7", features = ["io-uring"] }
+actix-session = { version = "0.6", features = ["redis-actor-session"] }
+actix-cors = { version = "0.6" }
+
+# SQL
+sea-query = { version = "0.23", features = [
+    "derive",
+    "thread-safe",
+    "backend-postgres",
+    "with-chrono",
+    "with-time",
+    "with-json",
+    "with-rust_decimal",
+    "with-uuid",
+    "sqlx-postgres",
+    "postgres",
+    "postgres-array",
+]}
+
+entity = { path = "../entity" }
+migration = { path = "../migration" }
+
+
