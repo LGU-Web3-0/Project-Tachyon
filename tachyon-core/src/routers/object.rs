@@ -57,9 +57,9 @@ pub async fn get_handler(
         .one(&data.sql_db)
         .await
         .map_err(error::ErrorNotFound)?
-        .ok_or(error::ErrorNotFound("not found"))?;
+        .ok_or_else(|| error::ErrorNotFound("not found"))?;
 
-    if metadata.visibility == false {
+    if !metadata.visibility {
         return Err(error::ErrorUnauthorized("target not authorized"));
     }
 
@@ -67,7 +67,7 @@ pub async fn get_handler(
         .kv_db
         .get(metadata.uuid.as_bytes())
         .map_err(error::ErrorInternalServerError)?
-        .ok_or(error::ErrorNotFound("not found"))?;
+        .ok_or_else(|| error::ErrorNotFound("not found"))?;
     let stream = ObjectData { inner: Some(inner) };
 
     Ok(HttpResponse::Ok()
