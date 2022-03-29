@@ -41,7 +41,7 @@ impl MigrationTrait for Migration {
                     .col(
                         ColumnDef::new(entity::object::Column::Visibility)
                             .boolean()
-                            .not_null()
+                            .not_null(),
                     )
                     .if_not_exists()
                     .to_owned(),
@@ -49,18 +49,20 @@ impl MigrationTrait for Migration {
             .await?;
         manager
             .create_index(
-            sea_query::Index::create()
-                .table(entity::object::Entity)
-                .col(entity::object::Column::Uuid)
-                .to_owned()
-        ).await?;
+                sea_query::Index::create()
+                    .table(entity::object::Entity)
+                    .col(entity::object::Column::Uuid)
+                    .to_owned(),
+            )
+            .await?;
         manager
             .create_index(
                 sea_query::Index::create()
                     .table(entity::object::Entity)
                     .col(entity::object::Column::Name)
-                    .to_owned()
-            ).await?;
+                    .to_owned(),
+            )
+            .await?;
         Ok(())
     }
 

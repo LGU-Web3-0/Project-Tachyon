@@ -9,7 +9,7 @@ pub struct Model {
     pub name: String,
     pub mimetype: String,
     pub upload_time: DateTimeUtc,
-    pub visibility: bool
+    pub visibility: bool,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

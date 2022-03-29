@@ -1,18 +1,17 @@
+use crate::State;
+use actix_web::http::header::ContentType;
+use actix_web::web::Bytes;
+use actix_web::{error, web, HttpResponse, Result};
+use entity::sea_orm::EntityTrait;
+use sled::IVec;
 use std::pin::Pin;
 use std::task::{Context, Poll};
-use actix_web::{error, HttpResponse, Result, web};
-use actix_web::web::Bytes;
-use sled::IVec;
 use uuid::Uuid;
-use crate::State;
-use entity::sea_orm::EntityTrait;
-use actix_web::http::header::ContentType;
 
 #[derive(Debug, serde::Deserialize, serde::Serialize)]
 pub struct ObjectRequest {
     uuid: Uuid,
 }
-
 
 struct ObjectData {
     inner: Option<IVec>,
@@ -33,7 +32,11 @@ impl futures::Stream for ObjectData {
                 Some(x) => {
                     let result = Poll::Ready(Some(Ok(Bytes::copy_from_slice(x))));
                     if x.len() < length {
-                        let slice = this.inner.as_ref().unwrap_unchecked().subslice(x.len(), length - x.len());
+                        let slice = this
+                            .inner
+                            .as_ref()
+                            .unwrap_unchecked()
+                            .subslice(x.len(), length - x.len());
                         this.inner.replace(slice);
                     } else {
                         this.inner = None;
@@ -45,22 +48,34 @@ impl futures::Stream for ObjectData {
     }
 }
 
-pub async fn get_handler(info: web::Query<ObjectRequest>, data: web::Data<State>) -> Result<HttpResponse> {
+pub async fn get_handler(
+    info: web::Query<ObjectRequest>,
+    data: web::Data<State>,
+) -> Result<HttpResponse> {
     // TODO: auth
-    let metadata: entity::object::Model = entity::object::Entity::find_by_id(info.uuid).one(&data.sql_db).await
-        .map_err(error::ErrorNotFound)?.ok_or(error::ErrorNotFound("not found"))?;
+    let metadata: entity::object::Model = entity::object::Entity::find_by_id(info.uuid)
+        .one(&data.sql_db)
+        .await
+        .map_err(error::ErrorNotFound)?
+        .ok_or(error::ErrorNotFound("not found"))?;
 
     if metadata.visibility == false {
         return Err(error::ErrorUnauthorized("target not authorized"));
     }
 
-    let inner = data.kv_db.get(metadata.uuid.as_bytes()).map_err(error::ErrorInternalServerError)?.ok_or(error::ErrorNotFound("not found"))?;
-    let stream = ObjectData {
-        inner: Some(inner)
-    };
+    let inner = data
+        .kv_db
+        .get(metadata.uuid.as_bytes())
+        .map_err(error::ErrorInternalServerError)?
+        .ok_or(error::ErrorNotFound("not found"))?;
+    let stream = ObjectData { inner: Some(inner) };
 
     Ok(HttpResponse::Ok()
-        .insert_header(
-            ContentType(metadata.mimetype.parse().map_err(error::ErrorInternalServerError)?))
+        .insert_header(ContentType(
+            metadata
+                .mimetype
+                .parse()
+                .map_err(error::ErrorInternalServerError)?,
+        ))
         .streaming(stream))
 }
