@@ -13,7 +13,8 @@ mod routers;
 mod state;
 mod utils;
 
-#[global_allocator]
+#[cfg_attr(not(miri), global_allocator)]
+#[cfg_attr(miri, allow(dead_code))]
 static GLOBAL_MIMALLOC: mimalloc_rust::GlobalMiMalloc = mimalloc_rust::GlobalMiMalloc;
 
 #[actix_web::main]
