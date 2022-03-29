@@ -11,15 +11,15 @@ jobs:
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: nightly
-      - name: Install Miri
-        run: |
-          rustup toolchain install nightly --component miri
-          rustup override set nightly
-          cargo miri setup
-      - uses: actions-rs/cargo@v1
-        with:
-          command: miri
-          args: setup
+#      - name: Install Miri
+#        run: |
+#          rustup toolchain install nightly --component miri
+#          rustup override set nightly
+#          cargo miri setup
+#      - uses: actions-rs/cargo@v1
+#        with:
+#          command: miri
+#          args: setup
       - uses: actions-rs/cargo@v1
         with:
           command: build
