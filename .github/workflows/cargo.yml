@@ -13,17 +13,10 @@ jobs:
         with:
           toolchain: nightly
 
-      - name: Miri
-        run: |
-          rustup toolchain install nightly-2022-03-12 --component miri
-          rustup override set nightly-2022-03-12
-          cargo miri setup
-          cargo miri test --release --all-features
-
       - name: Toolchain
         run: |    
-          rustup toolchain install nightly
-          rustup override set nightly --profile minimal
+          rustup toolchain install nightly --profile minimal
+          rustup override set nightly
 
       - uses: actions-rs/cargo@v1
         with:
@@ -39,3 +32,10 @@ jobs:
         with:
           command: test
           args: --release --all-features
+
+      - name: Miri
+        run: |
+          rustup toolchain install nightly-2022-03-12 --component miri
+          rustup override set nightly-2022-03-12
+          cargo miri setup
+          cargo miri test --release --all-features
