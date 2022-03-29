@@ -8,31 +8,34 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: nightly
-#      - name: Install Miri
-#        run: |
-#          rustup toolchain install nightly --component miri
-#          rustup override set nightly
-#          cargo miri setup
-#      - uses: actions-rs/cargo@v1
-#        with:
-#          command: miri
-#          args: setup
+
+      - name: Miri
+        run: |
+          rustup toolchain install nightly-2022-03-12 --component miri
+          rustup override set nightly-2022-03-12
+          cargo miri setup
+          cargo miri test --release --all-features
+
+      - name: Toolchain
+        run: |    
+          rustup toolchain install nightly
+          rustup override set nightly --profile minimal
+
       - uses: actions-rs/cargo@v1
         with:
           command: build
           args: --all-features
+
       - uses: actions-rs/cargo@v1
         with:
           command: build
           args: --release --all-features
+
       - uses: actions-rs/cargo@v1
         with:
           command: test
           args: --release --all-features
-      - uses: actions-rs/cargo@v1
-        with:
-          command: miri 
-          args: test --release --all-features
