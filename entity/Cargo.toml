@@ -1,0 +1,17 @@
+[package]
+name = "entity"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies.sea-orm]
+version = "0.7"
+features = [
+    "macros",
+    "with-json",
+    "with-chrono",
+    "with-rust_decimal",
+    "with-uuid",
+    "with-time",
+    "sqlx-postgres",
+    "runtime-actix-rustls",
+]
