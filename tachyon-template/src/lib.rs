@@ -65,6 +65,7 @@ mod test {
     use super::*;
 
     #[tokio::test]
+    #[cfg_attr(miri, ignore)]
     async fn hello() -> std::result::Result<(), RenderError> {
         let data = HelloTemplate::new(["a", "b", "c"].into_iter())
             .render()

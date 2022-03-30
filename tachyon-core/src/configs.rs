@@ -27,6 +27,7 @@ pub struct Configs {
     pub redis_uri: String,
     pub server_addr: SocketAddr,
     pub sled_dir: PathBuf,
+    pub static_dir: PathBuf,
     pub cors: Option<CORSConfig>,
 }
 
