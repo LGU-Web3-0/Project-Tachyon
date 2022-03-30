@@ -1,6 +1,7 @@
 [workspace]
 members = [
     "tachyon-core",
+    "tachyon-template",
     "entity",
     "migration"
 ]

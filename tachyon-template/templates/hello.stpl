@@ -1,0 +1,8 @@
+<!DOCTYPE html>
+<html>
+    <body>
+        <% for msg in messages.iter() { %>
+            <div><%= msg %></div>
+        <% } %>
+    </body>
+</html>
