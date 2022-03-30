@@ -51,7 +51,7 @@ async fn main() -> anyhow::Result<()> {
                 )
                 .wrap(cors)
                 .app_data(state.clone())
-                .service(routers::routers())
+                .service(routers::routers(&configs.static_dir))
         })
     };
 

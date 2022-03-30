@@ -37,6 +37,7 @@ actix-server = { version = "2.1", features = ["io-uring"] }
 actix-rt = { version = "2.7", features = ["io-uring"] }
 actix-session = { version = "0.6", features = ["redis-actor-session"] }
 actix-cors = { version = "0.6" }
+actix-files = { git = "https://github.com/LGU-Web3-0/actix-web", features = ["experimental-io-uring"] }
 
 # SQL
 sea-query = { version = "0.23", features = [
@@ -55,5 +56,6 @@ sea-query = { version = "0.23", features = [
 
 entity = { path = "../entity" }
 migration = { path = "../migration" }
+tachyon-template = { path = "../tachyon-template" }
 
 

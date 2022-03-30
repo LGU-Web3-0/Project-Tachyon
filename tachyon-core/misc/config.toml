@@ -2,6 +2,7 @@ db_uri = "postgres://postgres@localhost/test"
 server_addr = "0.0.0.0:8000"
 sled_dir = "/tmp/sled"
 redis_uri = "localhost:6379"
+static_dir = "static"
 
 [cors]
 origin = "*"
