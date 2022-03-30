@@ -4,7 +4,6 @@ pub mod hello_world;
 pub mod object;
 pub mod status;
 
-
 pub fn routers() -> Scope {
     web::scope("/api")
         .route("/hello", web::get().to(hello_world::handler))

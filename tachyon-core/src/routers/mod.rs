@@ -1,7 +1,7 @@
 mod api;
 mod view;
 
-use actix_web::{Scope, web};
+use actix_web::{web, Scope};
 
 pub fn routers() -> Scope {
     web::scope("")
