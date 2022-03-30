@@ -2,6 +2,7 @@
 members = [
     "tachyon-core",
     "tachyon-template",
+    "tachyon-typescript",
     "entity",
     "migration"
 ]
