@@ -79,3 +79,43 @@ pub async fn get_handler(
         ))
         .streaming(stream))
 }
+
+#[cfg(test)]
+mod test {
+
+    #[cfg(all(not(miri), test))]
+    #[actix_rt::test]
+    async fn it_polls_fully() {
+        use crate::routers::api::object::ObjectData;
+        use futures::StreamExt;
+        use rand::distributions::Alphanumeric;
+        use rand::prelude::*;
+
+        let uuid = uuid::Uuid::new_v4();
+        let db = sled::open(format!("/tmp/tachyon-ut-{}", uuid)).unwrap();
+
+        for i in [1, 2, 123, 555, 5261, 114514, 1024000] {
+            let rand_string: String = thread_rng()
+                .sample_iter(&Alphanumeric)
+                .take(i)
+                .map(char::from)
+                .collect();
+
+            db.insert(format!("test-{}", i), rand_string.as_bytes())
+                .unwrap();
+            let data = db.get(format!("test-{}", i)).unwrap().unwrap();
+            let data = ObjectData { inner: Some(data) };
+            let data: Vec<u8> = data
+                .collect::<Vec<_>>()
+                .await
+                .into_iter()
+                .filter_map(Result::ok)
+                .map(|x| x.to_vec())
+                .flatten()
+                .collect();
+            assert_eq!(data, rand_string.as_bytes())
+        }
+
+        std::fs::remove_dir_all(format!("/tmp/tachyon-ut-{}", uuid)).unwrap();
+    }
+}

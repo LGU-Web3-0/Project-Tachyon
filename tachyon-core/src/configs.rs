@@ -31,7 +31,7 @@ pub struct Configs {
     pub cors: Option<CORSConfig>,
 }
 
-#[derive(Deserialize, Serialize, Debug)]
+#[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct CORSConfig {
     pub origin: String,
     pub methods: Option<Vec<String>>,
@@ -42,6 +42,17 @@ pub struct CORSConfig {
 }
 
 impl CORSConfig {
+    #[cfg(all(not(miri), test, feature = "integration-test"))]
+    pub fn accept_all() -> Self {
+        CORSConfig {
+            origin: "*".to_string(),
+            methods: Some(vec![]),
+            allow_headers: Some(vec![]),
+            expose_headers: Some(vec![]),
+            max_age: None,
+            wildcard: Some(true),
+        }
+    }
     pub fn middleware(&self) -> actix_cors::Cors {
         let mut cors = Cors::default();
 
