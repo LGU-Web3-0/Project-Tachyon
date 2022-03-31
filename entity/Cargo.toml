@@ -15,3 +15,6 @@ features = [
     "sqlx-postgres",
     "runtime-actix-rustls",
 ]
+
+[features]
+test = ["sea-orm/mock"]
