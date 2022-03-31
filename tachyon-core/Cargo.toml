@@ -23,10 +23,10 @@ chrono = { version = "0.4", features = ["serde"] }
 mime = "0.3"
 rand = { version = "0.8", features = [
     "nightly", "simd_support", "serde", "getrandom", "alloc", "std", "std_rng"
-] }
+]}
 
 # Object Storage
-sled = { version = "0.34", features = [ "io_uring" ] }
+sled = { version = "0.34"}
 
 # Runtime
 tokio = {version = "1.17", features = ["full"]}
@@ -35,12 +35,12 @@ futures = {version = "0.3"}
 
 # Server
 actix = "0.13"
-actix-web = { version = "4.0", features = ["experimental-io-uring", "rustls"] }
-actix-server = { version = "2.1", features = ["io-uring"] }
-actix-rt = { version = "2.7", features = ["io-uring"] }
+actix-web = { version = "4.0", features = ["rustls"] }
+actix-server = { version = "2.1"}
+actix-rt = { version = "2.7" }
 actix-session = { version = "0.6", features = ["redis-actor-session"] }
 actix-cors = { version = "0.6" }
-actix-files = { git = "https://github.com/LGU-Web3-0/actix-web", features = ["experimental-io-uring"] }
+actix-files = { git = "https://github.com/LGU-Web3-0/actix-web" }
 
 # SQL
 sea-query = { version = "0.23", features = [
@@ -74,4 +74,11 @@ features = ["rustls", "compress-brotli", "compress-gzip", "compress-zstd", "cook
 
 [features]
 integration-test = ["actix-session/cookie-session", "entity/test", "nix", "serial_test", "thirtyfour", "awc"]
+io-uring = [
+    "sled/io_uring",
+    "actix-web/experimental-io-uring",
+    "actix-server/io-uring",
+    "actix-rt/io-uring",
+    "actix-files/experimental-io-uring"
+]
 
