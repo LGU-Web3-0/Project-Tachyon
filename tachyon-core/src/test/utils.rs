@@ -6,7 +6,7 @@ use std::env::current_exe;
 use std::process::Child;
 use std::sync::Arc;
 
-pub const ADDRESS: &str = "127.0.0.1:9999";
+pub const ADDRESS: &str = "127.0.0.1:10000";
 
 pub async fn startup_mock_app(uuid: uuid::Uuid) {
     let state = Data::new(State::mocked(uuid).unwrap());
@@ -33,11 +33,10 @@ pub async fn startup_background() -> ChildProcess {
         .env("TACHYON_BACKGROUND", format!("{}", uuid))
         .spawn()
         .unwrap();
-    awc::Client::default()
+    while let Err(_) = awc::Client::default()
         .get(format!("http://{}/", ADDRESS))
         .send()
-        .await
-        .unwrap();
+        .await {};
     ChildProcess(child, uuid)
 }
 
