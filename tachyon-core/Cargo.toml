@@ -30,7 +30,7 @@ sled = { version = "0.34"}
 
 # Runtime
 tokio = {version = "1.17", features = ["full"]}
-tokio-uring = "0.3"
+tokio-uring = { version = "0.3", optional = true }
 futures = {version = "0.3"}
 
 # Server
@@ -79,6 +79,7 @@ io-uring = [
     "actix-web/experimental-io-uring",
     "actix-server/io-uring",
     "actix-rt/io-uring",
-    "actix-files/experimental-io-uring"
+    "actix-files/experimental-io-uring",
+    "tokio-uring"
 ]
 
