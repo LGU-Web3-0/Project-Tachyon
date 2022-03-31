@@ -1,38 +1,61 @@
 #![feature(backtrace)]
+#![cfg_attr(feature = "integration-test", feature(exit_status_error))]
+extern crate core;
 
-use crate::configs::Opt;
+use crate::configs::{CORSConfig, Opt};
 use crate::state::State;
 use crate::utils::{IntoAnyhow, LoggedUnwrap};
 use actix_cors::Cors;
-use actix_session::storage::RedisActorSessionStore;
+use actix_session::storage::{RedisActorSessionStore, SessionStore};
 use actix_web::cookie::SameSite;
 use actix_web::web::Data;
 use clap::Parser;
+use std::path::PathBuf;
+use std::sync::Arc;
 mod configs;
 mod routers;
 mod state;
 mod utils;
 
+/// integration test
+#[cfg(test)]
+mod test {
+    #[cfg(all(not(miri), feature = "integration-test"))]
+    mod utils;
+
+    #[cfg(all(not(miri), feature = "integration-test"))]
+    pub use utils::*;
+}
+
 #[cfg_attr(not(miri), global_allocator)]
 #[cfg_attr(miri, allow(dead_code))]
 static GLOBAL_MIMALLOC: mimalloc_rust::GlobalMiMalloc = mimalloc_rust::GlobalMiMalloc;
 
-#[actix_web::main]
-async fn main() -> anyhow::Result<()> {
-    let opt: Opt = Opt::parse();
-    std::env::set_var("TACHYON_LOG", opt.log_level.as_str());
+async fn startup<S, C, A, B, D>(
+    log_level: &str,
+    static_dir: PathBuf,
+    state_initialization: Arc<S>,
+    cors_initialization: Arc<C>,
+    session_store: Arc<A>,
+    addr: D,
+) -> anyhow::Result<()>
+where
+    S: 'static + Fn() -> Data<State>,
+    C: 'static + Fn() -> Option<CORSConfig>,
+    A: 'static + Fn() -> B + Send + Sync,
+    B: 'static + SessionStore,
+    D: std::net::ToSocketAddrs,
+{
+    std::env::set_var("TACHYON_LOG", log_level);
     env_logger::init_from_env("TACHYON_LOG");
-    log::info!("loading configs from {:?}", opt.config_file);
-    let configs = Data::new(opt.parse_configs().await.logged_unwrap());
-    let state = Data::new(State::from_configs(&configs).await.logged_unwrap());
-    log::info!("starting server at {}", configs.server_addr);
-
+    let state: Data<State> = state_initialization();
+    let cors = cors_initialization();
     let server = {
         let state = state.clone();
-        let configs = configs.clone();
+        let cors = cors.clone();
         actix_web::HttpServer::new(move || {
-            let cors = configs
-                .cors
+            let routers = routers::routers(&static_dir);
+            let cors = cors
                 .as_ref()
                 .map(|x| x.middleware())
                 .unwrap_or_else(Cors::default);
@@ -41,22 +64,19 @@ async fn main() -> anyhow::Result<()> {
                 .wrap(actix_web::middleware::Logger::default())
                 // cookie session middleware
                 .wrap(
-                    actix_session::SessionMiddleware::builder(
-                        RedisActorSessionStore::new(&configs.redis_uri),
-                        state.key.clone(),
-                    )
-                    .cookie_http_only(true)
-                    .cookie_same_site(SameSite::Strict)
-                    .build(),
+                    actix_session::SessionMiddleware::builder(session_store(), state.key.clone())
+                        .cookie_http_only(true)
+                        .cookie_same_site(SameSite::Strict)
+                        .build(),
                 )
                 .wrap(cors)
                 .app_data(state.clone())
-                .service(routers::routers(&configs.static_dir))
+                .service(routers)
         })
     };
 
     server
-        .bind(configs.server_addr)
+        .bind(addr)
         .anyhow()
         .logged_unwrap()
         .run()
@@ -71,10 +91,23 @@ async fn main() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[cfg(test)]
-mod test {
-    #[test]
-    fn it_works() {
-        println!("welcome!");
-    }
+#[actix_web::main]
+async fn main() -> anyhow::Result<()> {
+    let opt: Opt = Opt::parse();
+    log::info!("loading configs from {:?}", opt.config_file);
+    let configs = Data::new(opt.parse_configs().await.logged_unwrap());
+    let state = Data::new(State::from_configs(&configs).await.logged_unwrap());
+    let cors_config = configs.cors.clone();
+    let redis_uri = configs.redis_uri.clone();
+    log::info!("starting server at {}", configs.server_addr);
+
+    startup(
+        opt.log_level.as_str(),
+        configs.static_dir.clone(),
+        Arc::new(move || state.clone()),
+        Arc::new(move || cors_config.clone()),
+        Arc::new(move || RedisActorSessionStore::new(&redis_uri)),
+        configs.server_addr,
+    )
+    .await
 }
