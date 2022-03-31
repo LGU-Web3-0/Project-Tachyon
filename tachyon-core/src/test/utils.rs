@@ -18,7 +18,7 @@ pub async fn startup_mock_app(uuid: uuid::Uuid) {
         Arc::new(move || state.clone()),
         Arc::new(move || cors_config.clone()),
         Arc::new(move || CookieSessionStore::default()),
-        "0.0.0.0:8000",
+        ADDRESS,
     )
     .await
     .unwrap();
