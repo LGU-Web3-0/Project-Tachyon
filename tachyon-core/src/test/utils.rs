@@ -6,7 +6,7 @@ use std::env::current_exe;
 use std::process::Child;
 use std::sync::Arc;
 
-pub const ADDRESS: &str = "0.0.0.0:8000";
+pub const ADDRESS: &str = "0.0.0.0:60000";
 
 pub async fn startup_mock_app(uuid: uuid::Uuid) {
     let state = Data::new(State::mocked(uuid).unwrap());
