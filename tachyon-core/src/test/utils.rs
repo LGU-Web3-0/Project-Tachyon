@@ -36,7 +36,8 @@ pub async fn startup_background() -> ChildProcess {
     while let Err(_) = awc::Client::default()
         .get(format!("http://{}/", ADDRESS))
         .send()
-        .await {};
+        .await
+    {}
     ChildProcess(child, uuid)
 }
 
