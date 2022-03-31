@@ -69,11 +69,10 @@ pub struct IndexTemplate {
 impl IndexTemplate {
     pub fn new<S: AsRef<str>>(input: S) -> Self {
         Self {
-            title: input.as_ref().to_string()
+            title: input.as_ref().to_string(),
         }
     }
 }
-
 
 #[cfg(test)]
 mod test {
