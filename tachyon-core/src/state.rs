@@ -3,13 +3,11 @@ use crate::utils::Result;
 use actix_web::cookie::Key;
 use anyhow::anyhow;
 use entity::sea_orm::{Database, DatabaseConnection};
-use hashbrown::HashMap;
 
 pub struct State {
     pub sql_db: DatabaseConnection,
     pub kv_db: sled::Db,
     pub key: Key,
-    pub frontend: HashMap<&'static str, &'static str>,
 }
 
 impl State {
@@ -17,15 +15,10 @@ impl State {
         let sql_db = Database::connect(&configs.db_uri).await?;
         let kv_db = sled::Config::new().path(&configs.sled_dir).open()?;
         let key = Key::try_generate().ok_or_else(|| anyhow!("unable to generate cookie key"))?;
-        let mut frontend = hashbrown::HashMap::new();
-        for i in tachyon_frontend::TARGETS {
-            frontend.insert(i.1, i.0);
-        }
         Ok(State {
             sql_db,
             kv_db,
             key,
-            frontend,
         })
     }
 
@@ -37,15 +30,10 @@ impl State {
             .path(format!("/tmp/tachyon-mock-test-{}", uuid))
             .open()?;
         let key = Key::try_generate().ok_or_else(|| anyhow!("unable to generate cookie key"))?;
-        let mut frontend = hashbrown::HashMap::new();
-        for i in tachyon_frontend::TARGETS {
-            frontend.insert(i.1, i.0);
-        }
         Ok(State {
             sql_db,
             kv_db,
             key,
-            frontend,
         })
     }
 }

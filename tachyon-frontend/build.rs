@@ -1,32 +1,24 @@
 #![feature(exit_status_error)]
+
 use std::fs;
 use std::fs::File;
 use std::io::Write;
-use std::path::PathBuf;
+use std::path::{PathBuf, Path};
 
 struct CSSTarget {
-    name: String,
     path: PathBuf,
 }
 
-fn list_css(dir: PathBuf, prefix: String) -> Vec<CSSTarget> {
+fn list_css<P : AsRef<Path>>(dir: P) -> Vec<CSSTarget> {
     let mut res = Vec::new();
     for i in fs::read_dir(dir).unwrap().map(|x| x.unwrap()) {
         let meta = i.metadata().unwrap();
-        let name = i.file_name().to_str().unwrap().to_string();
         let path = i.path();
         if meta.is_dir() {
-            let mut vec = list_css(path, format!("{}_{}", prefix, name));
+            let mut vec = list_css(path.as_path());
             res.append(&mut vec);
         } else {
             res.push(CSSTarget {
-                name: format!(
-                    "{}_{}",
-                    prefix.to_uppercase(),
-                    name.replace('.', "_").to_uppercase()
-                )
-                .trim_start_matches('_')
-                .to_string(),
                 path,
             })
         }
@@ -37,26 +29,18 @@ fn list_css(dir: PathBuf, prefix: String) -> Vec<CSSTarget> {
 fn generate_rust(items: Vec<CSSTarget>) {
     let file = File::create(".tmp/summary.rs").unwrap();
     let mut writer = std::io::BufWriter::new(file);
+
+    write!(&mut writer, "pub const TARGETS: phf::Map<&'static str, &'static str> = ").unwrap();
+    let mut map = &mut phf_codegen::Map::new();
+
     for i in &items {
-        writeln!(
-            writer,
-            r#"pub const {} : (&str, &str) = (include_str!("{}"), "{}");"#,
-            i.name,
-            i.path.canonicalize().unwrap().to_str().unwrap(),
-            i.path.to_str().unwrap().trim_start_matches("dist/")
-        )
-        .unwrap();
+        let mut path = std::path::PathBuf::new();
+        path.push("..");
+        path.push( &i.path);
+        map = map.entry(i.path.to_str().unwrap().trim_start_matches("dist/"), &format!("include_str!({:?})",  path));
     }
-    writeln!(
-        writer,
-        r#"pub const TARGETS : [&(&str, &str); {}] = ["#,
-        items.len()
-    )
-    .unwrap();
-    for i in &items {
-        writeln!(writer, "    &{},", i.name).unwrap();
-    }
-    writeln!(writer, "];",).unwrap();
+
+    writeln!(&mut writer, "{};", map.build()).unwrap();
 }
 
 fn main() {
@@ -91,5 +75,5 @@ fn main() {
         .unwrap()
         .exit_ok()
         .unwrap();
-    generate_rust(list_css("dist".parse().unwrap(), "".to_string()));
+    generate_rust(list_css("dist"));
 }
