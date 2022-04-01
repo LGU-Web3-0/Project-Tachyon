@@ -1,0 +1,26 @@
+FROM archlinux:latest
+
+RUN echo 'Server = https://opentuna.cn/archlinux/$repo/os/$arch' > /etc/pacman.d/mirrorlist && \
+    cat /etc/pacman.d/mirrorlist && \
+    pacman -Syy --noconfirm && pacman -Syu --noconfirm lld clang rustup gulp yarn npm nodejs openssl base-devel cmake
+
+RUN mkdir -p $HOME/.cargo/ && echo $'\
+[source.crates-io] \n\
+replace-with = \'sjtu\' \n\
+[source.sjtu] \n\
+registry = "https://mirrors.sjtug.sjtu.edu.cn/git/crates.io-index" \n\
+'>$HOME/.cargo/config
+
+RUN rustup toolchain install nightly
+
+ENV PATH=$PATH:$HOME/.cargo/bin
+
+RUN cargo install cargo-watch sea-orm-cli
+
+WORKDIR /tachyon
+
+ENTRYPOINT cargo watch \
+    -x "run --all-features --bin migration -- up" \
+    -x "run --all-features --bin tachyon-core -- -l debug -c /tachyon/tachyon-core/misc/config.toml"
+
+

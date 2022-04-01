@@ -48,8 +48,6 @@ fn generate_rust(items: Vec<CSSTarget>) {
 
 fn main() {
     println!("cargo:rerun-if-changed=src");
-    println!("cargo:rerun-if-changed=dist");
-    println!("cargo:rerun-if-changed=.tmp");
     println!("cargo:rerun-if-changed=gulpfile.js");
     println!("cargo:rerun-if-changed=package.json");
     println!("cargo:rerun-if-changed=tsconfig.json");
