@@ -3,13 +3,13 @@
 use std::fs;
 use std::fs::File;
 use std::io::Write;
-use std::path::{PathBuf, Path};
+use std::path::{Path, PathBuf};
 
 struct CSSTarget {
     path: PathBuf,
 }
 
-fn list_css<P : AsRef<Path>>(dir: P) -> Vec<CSSTarget> {
+fn list_css<P: AsRef<Path>>(dir: P) -> Vec<CSSTarget> {
     let mut res = Vec::new();
     for i in fs::read_dir(dir).unwrap().map(|x| x.unwrap()) {
         let meta = i.metadata().unwrap();
@@ -18,9 +18,7 @@ fn list_css<P : AsRef<Path>>(dir: P) -> Vec<CSSTarget> {
             let mut vec = list_css(path.as_path());
             res.append(&mut vec);
         } else {
-            res.push(CSSTarget {
-                path,
-            })
+            res.push(CSSTarget { path })
         }
     }
     res
@@ -30,12 +28,19 @@ fn generate_rust(items: Vec<CSSTarget>) {
     let file = File::create(".tmp/summary.rs").unwrap();
     let mut writer = std::io::BufWriter::new(file);
 
-    write!(&mut writer, "pub const TARGETS: phf::Map<&'static str, &'static str> = ").unwrap();
+    write!(
+        &mut writer,
+        "pub const TARGETS: phf::Map<&'static str, &'static str> = "
+    )
+    .unwrap();
     let mut map = &mut phf_codegen::Map::new();
 
     for i in &items {
         let data = std::fs::read_to_string(&i.path).unwrap();
-        map = map.entry(i.path.to_str().unwrap().trim_start_matches("dist/"), &format!("{:?}", data));
+        map = map.entry(
+            i.path.to_str().unwrap().trim_start_matches("dist/"),
+            &format!("{:?}", data),
+        );
     }
 
     writeln!(&mut writer, "{};", map.build()).unwrap();

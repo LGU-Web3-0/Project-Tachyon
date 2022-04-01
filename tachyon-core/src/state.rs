@@ -15,11 +15,7 @@ impl State {
         let sql_db = Database::connect(&configs.db_uri).await?;
         let kv_db = sled::Config::new().path(&configs.sled_dir).open()?;
         let key = Key::try_generate().ok_or_else(|| anyhow!("unable to generate cookie key"))?;
-        Ok(State {
-            sql_db,
-            kv_db,
-            key,
-        })
+        Ok(State { sql_db, kv_db, key })
     }
 
     #[cfg(all(not(miri), test, feature = "integration-test"))]
@@ -30,10 +26,6 @@ impl State {
             .path(format!("/tmp/tachyon-mock-test-{}", uuid))
             .open()?;
         let key = Key::try_generate().ok_or_else(|| anyhow!("unable to generate cookie key"))?;
-        Ok(State {
-            sql_db,
-            kv_db,
-            key,
-        })
+        Ok(State { sql_db, kv_db, key })
     }
 }
