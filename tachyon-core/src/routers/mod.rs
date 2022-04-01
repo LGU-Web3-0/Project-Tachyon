@@ -3,8 +3,10 @@ mod view;
 
 use actix_files::{Directory, Files};
 use actix_web::dev::{fn_service, ServiceRequest, ServiceResponse};
+use actix_web::error::ErrorNotFound;
 use actix_web::{web, HttpRequest, HttpResponse, Result, Scope};
 use std::path::Path;
+use tachyon_template::AsyncRenderOnce;
 
 async fn forbidden(req: ServiceRequest) -> Result<ServiceResponse> {
     Ok(ServiceResponse::new(
@@ -20,17 +22,26 @@ fn forbidden_index(_: &Directory, req: &HttpRequest) -> std::io::Result<ServiceR
     ))
 }
 
-async fn tachyonjs() -> HttpResponse {
-    HttpResponse::Ok()
-        .content_type("application/x-ecmascript;charset=utf-8")
-        .body(tachyon_typescript::TACHYON_SCRIPT)
+async fn frontend(path: web::Path<String>) -> Result<HttpResponse> {
+    let path = path.into_inner();
+    match tachyon_frontend::TARGETS.get(path.as_str()) {
+        None => Err(ErrorNotFound("not found")),
+        Some(e) => Ok(HttpResponse::Ok().body(*e)),
+    }
+}
+
+async fn index() -> Result<HttpResponse> {
+    tachyon_template::IndexTemplate::new("Project Tachyon")
+        .render_response()
+        .await
 }
 
 pub fn routers<S: AsRef<Path>>(static_path: S) -> Scope {
     web::scope("")
         .service(api::routers())
         .service(view::routers())
-        .route("/static/tachyon.js", web::get().to(tachyonjs))
+        .route("/frontend/{path}", web::get().to(frontend))
+        .route("/", web::get().to(index))
         .service(
             Files::new("/static", static_path.as_ref())
                 .show_files_listing()

@@ -17,6 +17,7 @@ impl State {
         let key = Key::try_generate().ok_or_else(|| anyhow!("unable to generate cookie key"))?;
         Ok(State { sql_db, kv_db, key })
     }
+
     #[cfg(all(not(miri), test, feature = "integration-test"))]
     pub fn mocked(uuid: uuid::Uuid) -> Result<Self> {
         use entity::sea_orm::{DatabaseBackend, MockDatabase};
