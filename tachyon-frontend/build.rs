@@ -34,10 +34,8 @@ fn generate_rust(items: Vec<CSSTarget>) {
     let mut map = &mut phf_codegen::Map::new();
 
     for i in &items {
-        let mut path = std::path::PathBuf::new();
-        path.push("..");
-        path.push( &i.path);
-        map = map.entry(i.path.to_str().unwrap().trim_start_matches("dist/"), &format!("include_str!({:?})",  path));
+        let data = std::fs::read_to_string(&i.path).unwrap();
+        map = map.entry(i.path.to_str().unwrap().trim_start_matches("dist/"), &format!("{:?}", data));
     }
 
     writeln!(&mut writer, "{};", map.build()).unwrap();
