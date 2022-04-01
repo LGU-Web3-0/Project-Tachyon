@@ -8,7 +8,18 @@ gulp.task("default", function () {
     .src()
     .pipe(tsProject())
     .js
-    .pipe(gulp.dest("dist"))
+    .pipe(gulp.dest(".tmp"))
     .pipe(webpack( require("./webpack.config.js") ))
     .pipe(gulp.dest("dist"));
 });
+
+gulp.task('css', () => {
+  const postcss    = require('gulp-postcss')
+  const sourcemaps = require('gulp-sourcemaps')
+
+  return gulp.src('src/**/*.css')
+      .pipe( sourcemaps.init() )
+      .pipe( postcss() )
+      .pipe( sourcemaps.write('.') )
+      .pipe( gulp.dest('dist') )
+})

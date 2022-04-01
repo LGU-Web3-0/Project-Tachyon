@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <script src="/static/tachyon.js"></script>
+        <script src="/frontend/tachyon.js"></script>
     </head>
     <body>
         <% for msg in messages.iter() { %>

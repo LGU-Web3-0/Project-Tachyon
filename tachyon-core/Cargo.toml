@@ -24,6 +24,7 @@ mime = "0.3"
 rand = { version = "0.8", features = [
     "nightly", "simd_support", "serde", "getrandom", "alloc", "std", "std_rng"
 ]}
+hashbrown = "0.12"
 
 # Object Storage
 sled = { version = "0.34"}
@@ -60,7 +61,7 @@ sea-query = { version = "0.23", features = [
 entity = { path = "../entity" }
 migration = { path = "../migration" }
 tachyon-template = { path = "../tachyon-template" }
-tachyon-typescript = { path = "../tachyon-typescript" }
+tachyon-frontend= { path = "../tachyon-frontend" }
 
 #Test Specific
 nix = { version = "0.23", optional = true }
