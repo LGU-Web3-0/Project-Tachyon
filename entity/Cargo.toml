@@ -3,6 +3,17 @@ name = "entity"
 version = "0.1.0"
 edition = "2021"
 
+[dependencies]
+sequoia-openpgp = { version = "1.8" }
+rust-argon2 = "1.0.0"
+nanorand = { version = "0.7" }
+anyhow = "1"
+log = "0.4"
+
+[dependencies.serde]
+version = "1"
+features = ["derive"]
+
 [dependencies.sea-orm]
 version = "0.7"
 features = [

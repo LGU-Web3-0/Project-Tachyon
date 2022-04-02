@@ -13,7 +13,7 @@ pub async fn startup_mock_app(uuid: uuid::Uuid) {
     let cors_config = Some(CORSConfig::accept_all());
 
     startup(
-        "error",
+        "debug",
         "../static".parse().unwrap(),
         Arc::new(move || state.clone()),
         Arc::new(move || cors_config.clone()),

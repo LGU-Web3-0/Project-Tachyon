@@ -25,6 +25,7 @@ rand = { version = "0.8", features = [
     "nightly", "simd_support", "serde", "getrandom", "alloc", "std", "std_rng"
 ]}
 hashbrown = "0.12"
+validator = { version = "0.14", features = ["derive", "phone", "card", "unic"] }
 
 # Object Storage
 sled = { version = "0.34"}
