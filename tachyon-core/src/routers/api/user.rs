@@ -31,15 +31,6 @@ pub async fn add(
     session: Session,
     data: web::Data<State>,
 ) -> Result<HttpResponse> {
-    #[cfg(feature = "integration-test")]
-    fn permissive(req: &Json<UserAddRequest>) -> bool {
-        if let Some(true) = &req.no_session {
-            true
-        } else {
-            false
-        }
-    }
-
     async fn is_admin(_user: &str) -> bool {
         // TODO: check admin
         true
@@ -86,7 +77,7 @@ pub async fn add(
         }
         Ok(Some(user)) if is_admin(&user).await => insert_user(&request, &data.sql_db).await,
         #[cfg(feature = "integration-test")]
-        Ok(None) if permissive(&request) => insert_user(&request, &data.sql_db).await,
+        Ok(None) if matches!(request.no_session, Some(true)) => insert_user(&request, &data.sql_db).await,
         Ok(_) => {
             status = http::StatusCode::UNAUTHORIZED;
             UserAddResult {
