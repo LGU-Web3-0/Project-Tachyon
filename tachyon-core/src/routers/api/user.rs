@@ -1,9 +1,8 @@
-use crate::utils::IntoAnyhow;
 use crate::State;
 use actix_session::Session;
 use actix_web::error::ErrorInternalServerError;
 use actix_web::web::Json;
-use actix_web::{Result, http, web, HttpResponse};
+use actix_web::{http, web, HttpResponse, Result};
 use entity::sea_orm::{ActiveModelTrait, DatabaseConnection};
 use validator::Validate;
 
@@ -57,9 +56,9 @@ pub async fn add(
             }
         }
         let prepared =
-            entity::user::Entity::prepare(&req.name, &req.email, &req.password, &req.gpg_key);
+            entity::user::Model::prepare(&req.name, &req.email, &req.password, &req.gpg_key);
         if let Ok(model) = prepared {
-            match model.insert(db).await.anyhow() {
+            match model.insert(db).await {
                 Ok(_) => UserAddResult {
                     success: true,
                     message: None,
@@ -96,10 +95,12 @@ pub async fn add(
             }
         }
     };
-    Ok(HttpResponse::Ok()
+    let reply = HttpResponse::Ok()
         .content_type("application/json;charset=utf-8")
         .status(status)
-        .body(simd_json::to_string(&json).map_err(ErrorInternalServerError)?))
+        .body(simd_json::to_string(&json).map_err(ErrorInternalServerError)?);
+
+    Ok(reply)
 }
 
 #[cfg(test)]

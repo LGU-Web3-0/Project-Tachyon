@@ -62,7 +62,7 @@ sea-query = { version = "0.23", features = [
 entity = { path = "../entity" }
 migration = { path = "../migration" }
 tachyon-template = { path = "../tachyon-template" }
-tachyon-frontend= { path = "../tachyon-frontend" }
+tachyon-frontend = { path = "../tachyon-frontend" }
 
 #Test Specific
 nix = { version = "0.23", optional = true }
@@ -75,7 +75,7 @@ optional = true
 features = ["rustls", "compress-brotli", "compress-gzip", "compress-zstd", "cookies", "trust-dns"]
 
 [features]
-integration-test = ["actix-session/cookie-session", "entity/test", "nix", "serial_test", "thirtyfour", "awc"]
+integration-test = ["entity/test", "nix", "serial_test", "thirtyfour", "awc"]
 io-uring = [
     "sled/io_uring",
     "actix-web/experimental-io-uring",

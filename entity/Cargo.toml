@@ -28,4 +28,4 @@ features = [
 ]
 
 [features]
-test = ["sea-orm/mock"]
+test = []

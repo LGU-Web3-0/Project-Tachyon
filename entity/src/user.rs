@@ -15,7 +15,7 @@ impl EntityName for Entity {
 
 #[derive(Clone, Debug, PartialEq, DeriveModel, DeriveActiveModel, Serialize, Deserialize)]
 pub struct Model {
-    pub id: u64,
+    pub id: i64,
     pub name: String,
     pub email: String,
     pub password: String,
@@ -67,7 +67,7 @@ impl RelationTrait for Relation {
 
 impl ActiveModelBehavior for ActiveModel {}
 
-impl Entity {
+impl Model {
     pub fn prepare<S0, S1, S2, S3>(
         name: S0,
         email: S1,
@@ -99,6 +99,9 @@ impl Entity {
                     pgp_key: ActiveValue::Set(pgp_key),
                 }
             })
+    }
+    pub fn verify_password<S: AsRef<str>>(&self, pass: S) -> anyhow::Result<bool> {
+        argon2::verify_encoded(&self.password, pass.as_ref().as_bytes()).map_err(Into::into)
     }
 }
 
@@ -173,11 +176,11 @@ n3XeojQyGHkDJv3VdkZbjWFYzUtB2uCpIbwzqqb0zOfJhOQTqqvlj32bCHJm6kKb
 =npsE
 -----END PGP PUBLIC KEY BLOCK-----"#;
 
-    #[cfg(not(miri))]
     #[test]
+    #[cfg_attr(miri, ignore)]
     fn it_creates_user() {
         use super::*;
-        Entity::prepare("schrodinger", "i@zhuyi.fan", "123456", KEY_BLOCK).unwrap();
+        Model::prepare("schrodinger", "i@zhuyi.fan", "123456", KEY_BLOCK).unwrap();
     }
 }
 

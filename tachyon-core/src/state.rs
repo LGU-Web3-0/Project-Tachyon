@@ -19,9 +19,13 @@ impl State {
     }
 
     #[cfg(all(not(miri), test, feature = "integration-test"))]
-    pub fn mocked(uuid: uuid::Uuid) -> Result<Self> {
-        use entity::sea_orm::{DatabaseBackend, MockDatabase};
-        let sql_db = MockDatabase::new(DatabaseBackend::Postgres).into_connection();
+    pub async fn mocked(uuid: uuid::Uuid) -> Result<Self> {
+        use migration::Migrator;
+        use migration::MigratorTrait;
+
+        let sql_db = Database::connect(crate::test::DB_ADDRESS).await?;
+        Migrator::down(&sql_db, None).await?;
+        Migrator::up(&sql_db, None).await?;
         let kv_db = sled::Config::new()
             .path(format!("/tmp/tachyon-mock-test-{}", uuid))
             .open()?;

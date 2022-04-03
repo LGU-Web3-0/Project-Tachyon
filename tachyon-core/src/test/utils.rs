@@ -1,5 +1,5 @@
 use crate::{startup, CORSConfig, State};
-use actix_session::storage::CookieSessionStore;
+use actix_session::storage::RedisActorSessionStore;
 use actix_web::web::Data;
 pub use serial_test::serial;
 use std::env::current_exe;
@@ -7,9 +7,11 @@ use std::process::Child;
 use std::sync::Arc;
 
 pub const ADDRESS: &str = "127.0.0.1:10000";
+pub const DB_ADDRESS: &str = "postgres://postgres@localhost/test";
+pub const REDIS_ADDRESS: &str = "localhost:6379";
 
 pub async fn startup_mock_app(uuid: uuid::Uuid) {
-    let state = Data::new(State::mocked(uuid).unwrap());
+    let state = Data::new(State::mocked(uuid).await.unwrap());
     let cors_config = Some(CORSConfig::accept_all());
 
     startup(
@@ -17,7 +19,7 @@ pub async fn startup_mock_app(uuid: uuid::Uuid) {
         "../static".parse().unwrap(),
         Arc::new(move || state.clone()),
         Arc::new(move || cors_config.clone()),
-        Arc::new(move || CookieSessionStore::default()),
+        Arc::new(move || RedisActorSessionStore::new(REDIS_ADDRESS)),
         ADDRESS,
     )
     .await
