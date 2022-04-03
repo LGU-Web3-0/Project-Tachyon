@@ -25,6 +25,7 @@ rand = { version = "0.8", features = [
     "nightly", "simd_support", "serde", "getrandom", "alloc", "std", "std_rng"
 ]}
 hashbrown = "0.12"
+validator = { version = "0.14", features = ["derive", "phone", "card", "unic"] }
 
 # Object Storage
 sled = { version = "0.34"}
@@ -39,7 +40,7 @@ actix = "0.13"
 actix-web = { version = "4.0", features = ["rustls"] }
 actix-server = { version = "2.1"}
 actix-rt = { version = "2.7" }
-actix-session = { version = "0.6", features = ["redis-actor-session"] }
+actix-session = { version = "0.6", features = ["redis-rs-session"] }
 actix-cors = { version = "0.6" }
 actix-files = { git = "https://github.com/LGU-Web3-0/actix-web" }
 
@@ -61,7 +62,7 @@ sea-query = { version = "0.23", features = [
 entity = { path = "../entity" }
 migration = { path = "../migration" }
 tachyon-template = { path = "../tachyon-template" }
-tachyon-frontend= { path = "../tachyon-frontend" }
+tachyon-frontend = { path = "../tachyon-frontend" }
 
 #Test Specific
 nix = { version = "0.23", optional = true }
@@ -74,7 +75,7 @@ optional = true
 features = ["rustls", "compress-brotli", "compress-gzip", "compress-zstd", "cookies", "trust-dns"]
 
 [features]
-integration-test = ["actix-session/cookie-session", "entity/test", "nix", "serial_test", "thirtyfour", "awc"]
+integration-test = ["entity/test", "nix", "serial_test", "thirtyfour", "awc"]
 io-uring = [
     "sled/io_uring",
     "actix-web/experimental-io-uring",

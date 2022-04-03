@@ -6,12 +6,13 @@ use crate::configs::{CORSConfig, Opt};
 use crate::state::State;
 use crate::utils::{IntoAnyhow, LoggedUnwrap};
 use actix_cors::Cors;
-use actix_session::storage::{RedisActorSessionStore, SessionStore};
+use actix_session::storage::{RedisSessionStore, SessionStore};
 use actix_web::cookie::SameSite;
 use actix_web::web::Data;
 use clap::Parser;
 use std::path::PathBuf;
 use std::sync::Arc;
+
 mod configs;
 mod routers;
 mod state;
@@ -99,14 +100,14 @@ async fn main() -> anyhow::Result<()> {
     let state = Data::new(State::from_configs(&configs).await.logged_unwrap());
     let cors_config = configs.cors.clone();
     let redis_uri = configs.redis_uri.clone();
+    let redis = RedisSessionStore::new(&redis_uri).await.logged_unwrap();
     log::info!("starting server at {}", configs.server_addr);
-
     startup(
         opt.log_level.as_str(),
         configs.static_dir.clone(),
         Arc::new(move || state.clone()),
         Arc::new(move || cors_config.clone()),
-        Arc::new(move || RedisActorSessionStore::new(&redis_uri)),
+        Arc::new(move || redis.clone()),
         configs.server_addr,
     )
     .await
