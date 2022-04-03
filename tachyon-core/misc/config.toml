@@ -1,7 +1,7 @@
 db_uri = "postgres://postgres@postgres/test"
 server_addr = "0.0.0.0:8000"
 sled_dir = "/sled"
-redis_uri = "redis:6379"
+redis_uri = "redis://redis:6379"
 static_dir = "static"
 
 [cors]

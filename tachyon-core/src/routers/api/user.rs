@@ -77,7 +77,9 @@ pub async fn add(
         }
         Ok(Some(user)) if is_admin(&user).await => insert_user(&request, &data.sql_db).await,
         #[cfg(feature = "integration-test")]
-        Ok(None) if matches!(request.no_session, Some(true)) => insert_user(&request, &data.sql_db).await,
+        Ok(None) if matches!(request.no_session, Some(true)) => {
+            insert_user(&request, &data.sql_db).await
+        }
         Ok(_) => {
             status = http::StatusCode::UNAUTHORIZED;
             UserAddResult {
@@ -98,27 +100,24 @@ pub async fn add(
 mod test {
     #[cfg(all(not(miri), test, feature = "integration-test"))]
     #[actix_rt::test]
-    #[crate::test::serial]
+    #[serial_test::serial]
     async fn it_adds_user() {
         use crate::routers::api::user::*;
-        use crate::test::{startup_background, ADDRESS};
-        use awc::Client;
-
-        let _child = startup_background().await;
-        let client = Client::default();
-        let mut res = client
-            .post(format!("http://{}/api/user/add", ADDRESS))
-            .send_json(&UserAddRequest {
-                name: "schrodinger".to_string(),
-                email: "i@zhuyi.fan".to_string(),
-                password: "123456".to_string(),
-                gpg_key: entity::user::KEY_BLOCK.to_string(),
-                #[cfg(feature = "integration-test")]
-                no_session: Some(true),
-            })
-            .await
-            .unwrap();
-        let res: UserAddResult = res.json().await.unwrap();
-        dbg!(res);
+        use actix_web::test;
+        crate::test_env!(|app| async move {
+            let req = test::TestRequest::post()
+                .uri("/api/user/add")
+                .set_json(&UserAddRequest {
+                    name: "schrodinger".to_string(),
+                    email: "i@zhuyi.fan".to_string(),
+                    password: "123456".to_string(),
+                    gpg_key: entity::user::KEY_BLOCK.to_string(),
+                    #[cfg(feature = "integration-test")]
+                    no_session: Some(true),
+                })
+                .to_request();
+            let resp: UserAddResult = test::call_and_read_body_json(&app, req).await;
+            assert!(resp.success);
+        })
     }
 }

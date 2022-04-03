@@ -1,72 +1,44 @@
-use crate::{startup, CORSConfig, State};
-use actix_session::storage::RedisActorSessionStore;
-use actix_web::web::Data;
-pub use serial_test::serial;
-use std::env::current_exe;
-use std::process::Child;
-use std::sync::Arc;
-
-pub const ADDRESS: &str = "127.0.0.1:10000";
 pub const DB_ADDRESS: &str = "postgres://postgres@localhost/test";
-pub const REDIS_ADDRESS: &str = "localhost:6379";
+pub const REDIS_ADDRESS: &str = "redis://localhost:6379";
 
-pub async fn startup_mock_app(uuid: uuid::Uuid) {
-    let state = Data::new(State::mocked(uuid).await.unwrap());
-    let cors_config = Some(CORSConfig::accept_all());
-
-    startup(
-        "debug",
-        "../static".parse().unwrap(),
-        Arc::new(move || state.clone()),
-        Arc::new(move || cors_config.clone()),
-        Arc::new(move || RedisActorSessionStore::new(REDIS_ADDRESS)),
-        ADDRESS,
-    )
-    .await
-    .unwrap();
-}
-
-pub struct ChildProcess(Child, uuid::Uuid);
-
-pub async fn startup_background() -> ChildProcess {
-    let uuid = uuid::Uuid::new_v4();
-    let child = std::process::Command::new(current_exe().unwrap())
-        .arg("internal_startup_hook")
-        .env("TACHYON_BACKGROUND", format!("{}", uuid))
-        .spawn()
-        .unwrap();
-    while let Err(_) = awc::Client::default()
-        .get(format!("http://{}/", ADDRESS))
-        .send()
-        .await
-    {}
-    ChildProcess(child, uuid)
-}
-
-impl Drop for ChildProcess {
-    fn drop(&mut self) {
-        self.0.kill().unwrap();
-        match std::fs::remove_dir_all(format!("/tmp/tachyon-mock-test-{}", self.1)) {
+#[macro_export]
+macro_rules! test_env {
+    ($body : expr) => {{
+        match env_logger::try_init_from_env("TACHYON_LOG") {
+            _ => (),
+        };
+        let _uuid = uuid::Uuid::new_v4();
+        let _state = $crate::Data::new($crate::State::mocked(_uuid).await.unwrap());
+        let _session = actix_session::storage::RedisSessionStore::new($crate::test::REDIS_ADDRESS)
+            .await
+            .unwrap();
+        #[allow(unused_variables)]
+        let app = actix_web::test::init_service(
+            actix_web::App::new()
+                .wrap(actix_web::middleware::Logger::default())
+                .wrap(
+                    actix_session::SessionMiddleware::builder(_session, _state.key.clone())
+                        .cookie_http_only(true)
+                        .cookie_same_site($crate::SameSite::Strict)
+                        .build(),
+                )
+                .wrap($crate::CORSConfig::accept_all().middleware())
+                .app_data(_state.clone())
+                .service($crate::routers::routers("../static")),
+        )
+        .await;
+        $body(app).await;
+        match std::fs::remove_dir_all(format!("/tmp/tachyon-mock-test-{}", _uuid)) {
             _ => (),
         }
-    }
+    }};
 }
 
 mod test {
-    use crate::test::{serial, startup_background, startup_mock_app};
-
     #[actix_rt::test]
-    #[serial]
-    async fn it_starts_up1() {
-        let _child = startup_background().await;
-    }
-
-    #[actix_rt::test]
-    async fn internal_startup_hook() {
-        if let Ok(uuid) =
-            std::env::var("TACHYON_BACKGROUND").map(|x| uuid::Uuid::parse_str(&x).unwrap())
-        {
-            startup_mock_app(uuid).await;
-        }
+    #[serial_test::serial]
+    #[cfg_attr(miri, ignore)]
+    async fn it_starts_up() {
+        test_env!(|_| async {})
     }
 }
