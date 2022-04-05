@@ -337,6 +337,16 @@ mod test {
                 .to_request();
             let resp: UserAddResult = test::call_and_read_body_json(&app, req).await;
             assert!(resp.success);
+            let req = test::TestRequest::post()
+                .uri("/api/user/login")
+                .set_json(&UserLogin {
+                    email: "i@zhuyi.fan".to_string(),
+                    password: "123456".to_string(),
+                    signature: None,
+                })
+                .to_request();
+            let resp: UserLoginResult = test::call_and_read_body_json(&app, req).await;
+            assert!(resp.success);
         })
     }
 }
