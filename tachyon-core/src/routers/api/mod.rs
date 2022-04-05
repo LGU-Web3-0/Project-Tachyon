@@ -11,4 +11,6 @@ pub fn routers() -> Scope {
         .route("/status", web::get().to(status::handler))
         .route("/object/get", web::get().to(object::get_handler))
         .route("/user/add", web::post().to(user::add))
+        .route("/user/login", web::post().to(user::login))
+        .route("/user/logout", web::post().to(user::logout))
 }

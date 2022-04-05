@@ -1,8 +1,12 @@
+use anyhow::anyhow;
 use nanorand::Rng;
 use sea_orm::entity::prelude::*;
 use sea_orm::ActiveValue;
+use sequoia_openpgp::packet::key::{PrimaryRole, PublicParts};
+use sequoia_openpgp::parse::{Dearmor, PacketParserResult, Parse};
+use sequoia_openpgp::serialize::SerializeInto;
+use sequoia_openpgp::{armor, Packet};
 use serde::{Deserialize, Serialize};
-use std::io::Read;
 
 #[derive(Copy, Clone, Default, Debug, DeriveEntity)]
 pub struct Entity;
@@ -20,6 +24,7 @@ pub struct Model {
     pub email: String,
     pub password: String,
     pub pgp_key: Vec<u8>,
+    pub wrong_pass_attempt: i64,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveColumn)]
@@ -29,6 +34,7 @@ pub enum Column {
     Email,
     Password,
     PgpKey,
+    WrongPassAttempt,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DerivePrimaryKey)]
@@ -55,6 +61,7 @@ impl ColumnTrait for Column {
             Self::Email => ColumnType::String(None).def().unique().indexed(),
             Self::Password => ColumnType::String(None).def(),
             Self::PgpKey => ColumnType::Binary.def(),
+            Self::WrongPassAttempt => ColumnType::BigInteger.def(),
         }
     }
 }
@@ -84,24 +91,73 @@ impl Model {
         let mut salt = [0u8; 64];
         nanorand::tls_rng().fill_bytes(&mut salt);
         let password = argon2::hash_encoded(password.as_ref().as_bytes(), &salt, &config)?;
-        let mut reader = sequoia_openpgp::armor::Reader::new(key.as_ref().as_bytes(), None);
-        let mut pgp_key = Vec::with_capacity(1024);
-        reader
-            .read_to_end(&mut pgp_key)
-            .map_err(Into::into)
-            .map(|x| {
-                log::debug!("read {} bytes from user armored value", x);
-                ActiveModel {
-                    id: ActiveValue::NotSet,
-                    name: ActiveValue::Set(name.as_ref().to_owned()),
-                    email: ActiveValue::Set(email.as_ref().to_owned()),
-                    password: ActiveValue::Set(password),
-                    pgp_key: ActiveValue::Set(pgp_key),
-                }
-            })
+        let mut parser =
+            sequoia_openpgp::parse::PacketParserBuilder::from_bytes(key.as_ref().as_bytes())?
+                .dearmor(Dearmor::Auto(armor::ReaderMode::VeryTolerant))
+                .build()?;
+        let mut pgp_key = None;
+        while let PacketParserResult::Some(p) = parser {
+            let (packet, next) = p.recurse().unwrap();
+            parser = next;
+            if let Packet::PublicKey(_) = packet {
+                pgp_key.replace(SerializeInto::to_vec(&packet)?);
+                break;
+            }
+        }
+        Ok(ActiveModel {
+            id: ActiveValue::NotSet,
+            name: ActiveValue::Set(name.as_ref().to_owned()),
+            email: ActiveValue::Set(email.as_ref().to_owned()),
+            password: ActiveValue::Set(password),
+            pgp_key: ActiveValue::Set(
+                pgp_key.ok_or_else(|| anyhow!("public key not found from packet"))?,
+            ),
+            wrong_pass_attempt: ActiveValue::Set(0),
+        })
     }
     pub fn verify_password<S: AsRef<str>>(&self, pass: S) -> anyhow::Result<bool> {
         argon2::verify_encoded(&self.password, pass.as_ref().as_bytes()).map_err(Into::into)
+    }
+    pub fn verify_signature<S: AsRef<[u8]>, M: AsRef<[u8]>>(
+        &self,
+        sig: S,
+        content: M,
+    ) -> anyhow::Result<bool> {
+        let parser = sequoia_openpgp::parse::PacketParserBuilder::from_bytes(sig.as_ref())
+            .unwrap()
+            .dearmor(Dearmor::Auto(armor::ReaderMode::VeryTolerant))
+            .build()
+            .unwrap();
+        let key = deserialize_pubkey(&self.pgp_key)?;
+        match parser {
+            PacketParserResult::Some(p) => match p.packet {
+                Packet::Signature(mut sig) => {
+                    log::debug!(
+                        "received signature: {:?}, content: {:?}",
+                        sig,
+                        content.as_ref()
+                    );
+                    sig.verify_message(&key, content).and(Ok(true))
+                }
+                _ => Err(anyhow!("invalid message type when reading signature")),
+            },
+            PacketParserResult::EOF(_) => Err(anyhow!("unexpected EOF when reading signature")),
+        }
+    }
+}
+
+fn deserialize_pubkey(
+    slice: &[u8],
+) -> anyhow::Result<sequoia_openpgp::packet::Key<PublicParts, PrimaryRole>> {
+    let key = sequoia_openpgp::parse::PacketParserBuilder::from_bytes(slice)?
+        .dearmor(Dearmor::Disabled)
+        .build()?;
+    match key {
+        PacketParserResult::Some(p) => match p.packet {
+            Packet::PublicKey(key) => Ok(key),
+            _ => Err(anyhow!("unexpected packet type when reading public key")),
+        },
+        PacketParserResult::EOF(_) => Err(anyhow!("unexpected EOF when reading public key")),
     }
 }
 
@@ -176,13 +232,52 @@ n3XeojQyGHkDJv3VdkZbjWFYzUtB2uCpIbwzqqb0zOfJhOQTqqvlj32bCHJm6kKb
 =npsE
 -----END PGP PUBLIC KEY BLOCK-----"#;
 
+    pub const SIGNATURE: &str = "-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCAAdFiEEMTJB756uKoVaCEd/ZVI1DY1+5fsFAmJMPvsACgkQZVI1DY1+
+5ftRIg//TCZRtLwtn7tp+t6JeNEUUU/cCQlf5v+Fwp3+4Qh0eidLqBszmepTS0oL
+bmBrZtMkrZ6m64Og6DGn8BDyGheCD+x5KcpZz8Io+3tyuvVxWaMjcR4fJnHnEmFG
+ETV7+riWUArRGFbl8k5+lcgPxVmjursbHda6186K4fH6DfRc1u9h4fZ2zAmwecc9
+tY1j+HdIjyc9ncjNvKRKFopcxpJyJ0KEufF3ja0SuEuyEqYkYETWjGIE08LVlwKF
+Rvzqnnk8CvgtjR6IPWkvmob7RpCsbozBaQfcdruSrmzmTwkAnE/2xFULOjHLMd7T
+M9Q8MacrgOwUBml5jPVlODWMd5JiHxZHlYcG4OVZxJ7usu1yHqH0f5MJtseE0+2u
++rHAOucfb+6k6IxHk1f9VnbGwE8Nvp49h5ESvoMpf7HlLdJT+xJlz+OtVDlRAxQG
+GDR9wMPf+Cb1Hig1Bsh92Y/QAYrhkCv5C36SKlq+XL7z/UXvFFqGG2E8jIGLHttW
+KAH/KyQvpHFdIDBK+JRw/iXJWqQ08aAcQSiq8npuSa1OdIpmsXtct4Xi5q3mIBEK
+JRNxd1ItlQjs3O0z1HJsZ/dsH3DSWtnwBdn6oapCNAeggNAvQLfWYXpjyfJzunUO
+OyqLz6xnF3w3LFSLF9qhNmFcryMm+zmU9zSgUbFtHqTH/idAcvE=
+=tCrN
+-----END PGP SIGNATURE-----
+";
+
+    pub const MESSAGE: &str = "123123\n";
+
     #[test]
     #[cfg_attr(miri, ignore)]
     fn it_creates_user() {
         use super::*;
-        Model::prepare("schrodinger", "i@zhuyi.fan", "123456", KEY_BLOCK).unwrap();
+        let user = Model::prepare("schrodinger", "i@zhuyi.fan", "123456", KEY_BLOCK).unwrap();
+        let key = deserialize_pubkey(&user.pgp_key.unwrap()).unwrap();
+        println!("{:?}", key)
+    }
+
+    #[test]
+    #[cfg_attr(miri, ignore)]
+    fn user_verifies_identity() {
+        use super::*;
+        let user = Model::prepare("schrodinger", "i@zhuyi.fan", "123456", KEY_BLOCK).unwrap();
+        let user = Model {
+            id: 0,
+            name: user.name.unwrap(),
+            email: user.email.unwrap(),
+            password: user.password.unwrap(),
+            pgp_key: user.pgp_key.unwrap(),
+            wrong_pass_attempt: 0,
+        };
+        assert!(user.verify_signature(SIGNATURE, MESSAGE).unwrap());
+        assert!(user.verify_password("123456").unwrap());
     }
 }
 
 #[cfg(feature = "test")]
-pub use test::KEY_BLOCK;
+pub use test::{KEY_BLOCK, MESSAGE, SIGNATURE};
