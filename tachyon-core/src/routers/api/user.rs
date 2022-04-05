@@ -49,6 +49,12 @@ pub struct UserLoginResult {
     message: Option<String>,
 }
 
+#[derive(serde::Serialize, serde::Deserialize, Debug)]
+pub struct UserLogoutResult {
+    success: bool,
+    message: Option<String>,
+}
+
 impl UserLoginResult {
     fn from_error<E: Into<anyhow::Error>>(e: E, signature_requirement: Option<Uuid>) -> Self {
         Self {
@@ -61,6 +67,19 @@ impl UserLoginResult {
         simd_json::to_string(self)
             .map_err(ErrorInternalServerError)
             .map(|x| HttpResponse::Ok().status(status).body(x))
+    }
+}
+
+pub async fn logout(session: Session) -> HttpResponse {
+    match session.remove("user").ok_or("already logged out") {
+        Ok(_) => HttpResponse::Ok().json(UserLogoutResult {
+            success: true,
+            message: None,
+        }),
+        Err(e) => HttpResponse::BadRequest().json(UserLogoutResult {
+            success: false,
+            message: Some(e.to_string()),
+        }),
     }
 }
 
@@ -94,7 +113,8 @@ pub async fn login(
                     "#,
                         user.id
                     );
-                    let i = db.execute(Statement::from_string(DatabaseBackend::Postgres, query))
+                    let i = db
+                        .execute(Statement::from_string(DatabaseBackend::Postgres, query))
                         .await
                         .anyhow();
                     match session
@@ -144,7 +164,7 @@ pub async fn login(
                             signature_requirement: None,
                             message: Some("password mismatch".to_string()),
                         }
-                        .to_reply(StatusCode::OK),
+                        .to_reply(StatusCode::UNAUTHORIZED),
                         Err(e) => UserLoginResult::from_error(e, None)
                             .to_reply(StatusCode::INTERNAL_SERVER_ERROR),
                     }
@@ -197,24 +217,24 @@ pub async fn login(
                     {
                         Ok(uuid) => {
                             let message = uuid.to_string();
-                            if !target_user
-                                .verify_signature(&sig, &message)
-                                .unwrap_or(false)
-                            {
-                                UserLoginResult {
+                            match target_user.verify_signature(&sig, &message) {
+                                Ok(false) => UserLoginResult {
                                     success: false,
                                     signature_requirement: Some(uuid),
                                     message: Some("failed to verify signature".to_string()),
                                 }
-                                .to_reply(StatusCode::LOCKED)
-                            } else {
-                                verify_pass_and_login(
-                                    &target_user,
-                                    &session,
-                                    &data.sql_db,
-                                    &request.password,
-                                )
-                                .await
+                                .to_reply(StatusCode::LOCKED),
+                                Ok(true) => {
+                                    verify_pass_and_login(
+                                        &target_user,
+                                        &session,
+                                        &data.sql_db,
+                                        &request.password,
+                                    )
+                                    .await
+                                }
+                                Err(e) => UserLoginResult::from_error(e, Some(uuid))
+                                    .to_reply(StatusCode::BAD_REQUEST),
                             }
                         }
                         Err(e) => UserLoginResult::from_error(e, None)

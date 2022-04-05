@@ -99,12 +99,9 @@ impl Model {
         while let PacketParserResult::Some(p) = parser {
             let (packet, next) = p.recurse().unwrap();
             parser = next;
-            match packet {
-                Packet::PublicKey(_) => {
-                    pgp_key.replace(SerializeInto::to_vec(&packet)?);
-                    break;
-                }
-                _ => (),
+            if let Packet::PublicKey(_) = packet {
+                pgp_key.replace(SerializeInto::to_vec(&packet)?);
+                break;
             }
         }
         Ok(ActiveModel {
@@ -134,7 +131,14 @@ impl Model {
         let key = deserialize_pubkey(&self.pgp_key)?;
         match parser {
             PacketParserResult::Some(p) => match p.packet {
-                Packet::Signature(mut sig) => sig.verify_message(&key, content).and(Ok(true)),
+                Packet::Signature(mut sig) => {
+                    log::debug!(
+                        "received signature: {:?}, content: {:?}",
+                        sig,
+                        content.as_ref()
+                    );
+                    sig.verify_message(&key, content).and(Ok(true))
+                }
                 _ => Err(anyhow!("invalid message type when reading signature")),
             },
             PacketParserResult::EOF(_) => Err(anyhow!("unexpected EOF when reading signature")),
@@ -268,6 +272,7 @@ OyqLz6xnF3w3LFSLF9qhNmFcryMm+zmU9zSgUbFtHqTH/idAcvE=
             email: user.email.unwrap(),
             password: user.password.unwrap(),
             pgp_key: user.pgp_key.unwrap(),
+            wrong_pass_attempt: 0,
         };
         assert!(user.verify_signature(SIGNATURE, MESSAGE).unwrap());
         assert!(user.verify_password("123456").unwrap());
