@@ -1,12 +1,12 @@
+use anyhow::anyhow;
 use nanorand::Rng;
 use sea_orm::entity::prelude::*;
 use sea_orm::ActiveValue;
-use serde::{Deserialize, Serialize};
-use anyhow::anyhow;
-use sequoia_openpgp::{armor, Packet};
 use sequoia_openpgp::packet::key::{PrimaryRole, PublicParts};
 use sequoia_openpgp::parse::{Dearmor, PacketParserResult, Parse};
 use sequoia_openpgp::serialize::SerializeInto;
+use sequoia_openpgp::{armor, Packet};
+use serde::{Deserialize, Serialize};
 
 #[derive(Copy, Clone, Default, Debug, DeriveEntity)]
 pub struct Entity;
@@ -24,7 +24,7 @@ pub struct Model {
     pub email: String,
     pub password: String,
     pub pgp_key: Vec<u8>,
-    pub wrong_pass_attempt: i64
+    pub wrong_pass_attempt: i64,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveColumn)]
@@ -34,7 +34,7 @@ pub enum Column {
     Email,
     Password,
     PgpKey,
-    WrongPassAttempt
+    WrongPassAttempt,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DerivePrimaryKey)]
@@ -91,9 +91,10 @@ impl Model {
         let mut salt = [0u8; 64];
         nanorand::tls_rng().fill_bytes(&mut salt);
         let password = argon2::hash_encoded(password.as_ref().as_bytes(), &salt, &config)?;
-        let mut parser = sequoia_openpgp::parse::PacketParserBuilder::from_bytes(key.as_ref().as_bytes())?
-            .dearmor(Dearmor::Auto(armor::ReaderMode::VeryTolerant))
-            .build()?;
+        let mut parser =
+            sequoia_openpgp::parse::PacketParserBuilder::from_bytes(key.as_ref().as_bytes())?
+                .dearmor(Dearmor::Auto(armor::ReaderMode::VeryTolerant))
+                .build()?;
         let mut pgp_key = None;
         while let PacketParserResult::Some(p) = parser {
             let (packet, next) = p.recurse().unwrap();
@@ -111,14 +112,20 @@ impl Model {
             name: ActiveValue::Set(name.as_ref().to_owned()),
             email: ActiveValue::Set(email.as_ref().to_owned()),
             password: ActiveValue::Set(password),
-            pgp_key: ActiveValue::Set(pgp_key.ok_or_else(|| anyhow!("public key not found from packet"))?),
-            wrong_pass_attempt: ActiveValue::Set(0)
+            pgp_key: ActiveValue::Set(
+                pgp_key.ok_or_else(|| anyhow!("public key not found from packet"))?,
+            ),
+            wrong_pass_attempt: ActiveValue::Set(0),
         })
     }
     pub fn verify_password<S: AsRef<str>>(&self, pass: S) -> anyhow::Result<bool> {
         argon2::verify_encoded(&self.password, pass.as_ref().as_bytes()).map_err(Into::into)
     }
-    pub fn verify_signature<S: AsRef<[u8]>, M: AsRef<[u8]>>(&self, sig: S, content: M) -> anyhow::Result<bool> {
+    pub fn verify_signature<S: AsRef<[u8]>, M: AsRef<[u8]>>(
+        &self,
+        sig: S,
+        content: M,
+    ) -> anyhow::Result<bool> {
         let parser = sequoia_openpgp::parse::PacketParserBuilder::from_bytes(sig.as_ref())
             .unwrap()
             .dearmor(Dearmor::Auto(armor::ReaderMode::VeryTolerant))
@@ -126,34 +133,27 @@ impl Model {
             .unwrap();
         let key = deserialize_pubkey(&self.pgp_key)?;
         match parser {
-            PacketParserResult::Some(p) => {
-                match p.packet {
-                    Packet::Signature(mut sig) => {
-                        sig.verify_message(&key, content)
-                            .and(Ok(true))
-                    },
-                    _ => Err(anyhow!("invalid message type when reading signature"))
-                }
-            }
-            PacketParserResult::EOF(_) => Err(anyhow!("unexpected EOF when reading signature"))
+            PacketParserResult::Some(p) => match p.packet {
+                Packet::Signature(mut sig) => sig.verify_message(&key, content).and(Ok(true)),
+                _ => Err(anyhow!("invalid message type when reading signature")),
+            },
+            PacketParserResult::EOF(_) => Err(anyhow!("unexpected EOF when reading signature")),
         }
     }
 }
 
-fn deserialize_pubkey(slice: &[u8]) -> anyhow::Result<sequoia_openpgp::packet::Key<PublicParts, PrimaryRole>> {
+fn deserialize_pubkey(
+    slice: &[u8],
+) -> anyhow::Result<sequoia_openpgp::packet::Key<PublicParts, PrimaryRole>> {
     let key = sequoia_openpgp::parse::PacketParserBuilder::from_bytes(slice)?
         .dearmor(Dearmor::Disabled)
         .build()?;
     match key {
-        PacketParserResult::Some(p) => {
-            match p.packet {
-                Packet::PublicKey(key) => Ok(key),
-                _ => Err(anyhow!("unexpected packet type when reading public key"))
-            }
-        }
-        PacketParserResult::EOF(_) => {
-            Err(anyhow!("unexpected EOF when reading public key"))
-        }
+        PacketParserResult::Some(p) => match p.packet {
+            Packet::PublicKey(key) => Ok(key),
+            _ => Err(anyhow!("unexpected packet type when reading public key")),
+        },
+        PacketParserResult::EOF(_) => Err(anyhow!("unexpected EOF when reading public key")),
     }
 }
 
@@ -228,7 +228,7 @@ n3XeojQyGHkDJv3VdkZbjWFYzUtB2uCpIbwzqqb0zOfJhOQTqqvlj32bCHJm6kKb
 =npsE
 -----END PGP PUBLIC KEY BLOCK-----"#;
 
-const SIGNATURE : &str = "-----BEGIN PGP SIGNATURE-----
+    pub const SIGNATURE: &str = "-----BEGIN PGP SIGNATURE-----
 
 iQIzBAABCAAdFiEEMTJB756uKoVaCEd/ZVI1DY1+5fsFAmJMPvsACgkQZVI1DY1+
 5ftRIg//TCZRtLwtn7tp+t6JeNEUUU/cCQlf5v+Fwp3+4Qh0eidLqBszmepTS0oL
@@ -246,7 +246,7 @@ OyqLz6xnF3w3LFSLF9qhNmFcryMm+zmU9zSgUbFtHqTH/idAcvE=
 -----END PGP SIGNATURE-----
 ";
 
-const MESSAGE : &str = "123123\n";
+    pub const MESSAGE: &str = "123123\n";
 
     #[test]
     #[cfg_attr(miri, ignore)]
@@ -263,11 +263,11 @@ const MESSAGE : &str = "123123\n";
         use super::*;
         let user = Model::prepare("schrodinger", "i@zhuyi.fan", "123456", KEY_BLOCK).unwrap();
         let user = Model {
-            id : 0,
+            id: 0,
             name: user.name.unwrap(),
             email: user.email.unwrap(),
             password: user.password.unwrap(),
-            pgp_key: user.pgp_key.unwrap()
+            pgp_key: user.pgp_key.unwrap(),
         };
         assert!(user.verify_signature(SIGNATURE, MESSAGE).unwrap());
         assert!(user.verify_password("123456").unwrap());
@@ -275,4 +275,4 @@ const MESSAGE : &str = "123123\n";
 }
 
 #[cfg(feature = "test")]
-pub use test::KEY_BLOCK;
+pub use test::{KEY_BLOCK, MESSAGE, SIGNATURE};

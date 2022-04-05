@@ -75,7 +75,7 @@ optional = true
 features = ["rustls", "compress-brotli", "compress-gzip", "compress-zstd", "cookies", "trust-dns"]
 
 [features]
-integration-test = ["entity/test", "nix", "serial_test", "thirtyfour", "awc"]
+integration-test = ["entity/test", "nix", "serial_test", "thirtyfour", "awc", "actix-session/cookie-session"]
 io-uring = [
     "sled/io_uring",
     "actix-web/experimental-io-uring",

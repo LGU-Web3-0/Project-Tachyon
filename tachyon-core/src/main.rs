@@ -15,9 +15,9 @@ use std::sync::Arc;
 
 mod configs;
 mod routers;
+mod session;
 mod state;
 mod utils;
-mod session;
 
 /// integration test
 #[cfg(test)]

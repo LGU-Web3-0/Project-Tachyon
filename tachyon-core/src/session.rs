@@ -1,4 +1,4 @@
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -15,11 +15,11 @@ pub struct UserInfo {
     pub id: i64,
     pub name: String,
     pub email: String,
-    pub perms: Permissions
+    pub perms: Permissions,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct PasswordChange {
     pub email: String,
-    pub token: Uuid
+    pub token: Uuid,
 }
