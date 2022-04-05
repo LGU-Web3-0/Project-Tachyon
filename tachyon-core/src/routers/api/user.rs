@@ -5,6 +5,7 @@ use actix_web::web::Json;
 use actix_web::{http, web, HttpResponse, Result};
 use entity::sea_orm::{ActiveModelTrait, DatabaseConnection};
 use validator::Validate;
+use crate::session::UserInfo;
 
 #[derive(serde::Serialize, serde::Deserialize, Debug, Validate)]
 pub struct UserAddRequest {
@@ -21,9 +22,22 @@ pub struct UserAddRequest {
 }
 
 #[derive(serde::Serialize, serde::Deserialize, Debug)]
+pub struct UserLogin {
+    email: String,
+    password: String,
+    signature: Option<String>
+}
+
+#[derive(serde::Serialize, serde::Deserialize, Debug)]
 pub struct UserAddResult {
     success: bool,
     message: Option<String>,
+}
+
+pub async fn login(request: Json<UserAddRequest>,
+                    session: Session,
+                    data: web::Data<State>) {
+
 }
 
 pub async fn add(
@@ -31,11 +45,6 @@ pub async fn add(
     session: Session,
     data: web::Data<State>,
 ) -> Result<HttpResponse> {
-    async fn is_admin(_user: &str) -> bool {
-        // TODO: check admin
-        true
-    }
-
     async fn insert_user(req: &Json<UserAddRequest>, db: &DatabaseConnection) -> UserAddResult {
         match req.validate() {
             Ok(_) => {}
@@ -67,7 +76,7 @@ pub async fn add(
         }
     }
     let mut status = http::StatusCode::OK;
-    let json = match session.get::<String>("user") {
+    let json = match session.get::<UserInfo>("user") {
         Err(e) => {
             status = http::StatusCode::INTERNAL_SERVER_ERROR;
             UserAddResult {
@@ -75,7 +84,7 @@ pub async fn add(
                 message: Some(format!("{}", e)),
             }
         }
-        Ok(Some(user)) if is_admin(&user).await => insert_user(&request, &data.sql_db).await,
+        Ok(Some(user)) if user.perms.user_management => insert_user(&request, &data.sql_db).await,
         #[cfg(feature = "integration-test")]
         Ok(None) if matches!(request.no_session, Some(true)) => {
             insert_user(&request, &data.sql_db).await

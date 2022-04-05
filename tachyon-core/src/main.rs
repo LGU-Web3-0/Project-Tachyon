@@ -17,6 +17,7 @@ mod configs;
 mod routers;
 mod state;
 mod utils;
+mod session;
 
 /// integration test
 #[cfg(test)]
