@@ -317,7 +317,6 @@ pub async fn add(
 
 #[cfg(test)]
 mod test {
-    use actix_web::test::read_body_json;
 
     #[cfg(all(not(miri), test, feature = "integration-test"))]
     #[actix_rt::test]
@@ -374,6 +373,7 @@ mod test {
         use crate::routers::api::user::*;
         use actix_web::dev::ServiceResponse;
         use actix_web::test;
+        use actix_web::test::read_body_json;
         let helper = crate::test::GPGHelper::new();
         crate::test_env!(|app| async move {
             let req = test::TestRequest::post()
