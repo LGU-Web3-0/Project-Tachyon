@@ -29,6 +29,8 @@ jobs:
           - 5432:5432
     steps:
       - uses: actions/checkout@v2
+      - name: Install Deps
+        run:  sudo apt-get install -y nettle-dev gpg gnupg
       - name: Install Rust
         run: rustup toolchain install nightly --component llvm-tools-preview
       - name: Install cargo-llvm-cov

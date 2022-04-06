@@ -67,6 +67,7 @@ where
                 // cookie session middleware
                 .wrap(
                     actix_session::SessionMiddleware::builder(session_store(), state.key.clone())
+                        .cookie_name("tachyon_id".to_string())
                         .cookie_http_only(true)
                         .cookie_same_site(SameSite::Strict)
                         .build(),

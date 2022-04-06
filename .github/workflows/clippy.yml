@@ -5,6 +5,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
+      - name: Install Nettle
+        run: sudo apt-get install -y nettle-dev
       - uses: actions-rs/toolchain@v1
         with:
             toolchain: nightly

@@ -137,7 +137,8 @@ impl Model {
                         sig,
                         content.as_ref()
                     );
-                    sig.verify_message(&key, content).and(Ok(true))
+                    let res = sig.verify_message(&key, content);
+                    res.and(Ok(true))
                 }
                 _ => Err(anyhow!("invalid message type when reading signature")),
             },

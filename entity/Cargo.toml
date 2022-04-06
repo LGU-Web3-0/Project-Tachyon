@@ -5,10 +5,8 @@ edition = "2021"
 
 [dependencies]
 sequoia-openpgp = { version = "1.8", default-features = false, features = [
-    "crypto-rust",
+    "crypto-nettle",
     "compression",
-    "allow-experimental-crypto",
-    "allow-variable-time-crypto"
 ]}
 rust-argon2 = "1.0.0"
 nanorand = { version = "0.7" }
