@@ -6,7 +6,7 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - name: Install Nettle
-        run: apt-get install -y nettle-dev
+        run: sudo apt-get install -y nettle-dev
       - uses: actions-rs/toolchain@v1
         with:
             toolchain: nightly
