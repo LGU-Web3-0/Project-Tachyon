@@ -82,7 +82,8 @@ integration-test = [
     "serial_test",
     "thirtyfour",
     "awc",
-    "actix-session/cookie-session"
+    "actix-session/cookie-session",
+    "tempfile"
 ]
 io-uring = [
     "sled/io_uring",
