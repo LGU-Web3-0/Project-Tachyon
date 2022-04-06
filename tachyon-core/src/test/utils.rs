@@ -45,23 +45,21 @@ pub struct GPGHelper {
 
 impl GPGHelper {
     pub fn new() -> Self {
-        let username = uuid::Uuid::new_v4().to_string();
         let mut file = tempfile::NamedTempFile::new().unwrap();
         file.write_all(
-            format!(
-                r#"
-Key-Type: default
+                r#"Key-Type: default
 Subkey-Type: default
-Name-Real: {}
-Name-Email: root@tachyon.test.user
+Key-Usage: encrypt,sign,auth
+Name-Real: Tachyon User
+Name-Email: tachyon@example.com
 Expire-Date: 0
 %no-protection
-%commit"#,
-                username
-            )
+%commit
+"#
             .as_bytes(),
         )
         .unwrap();
+        file.flush().unwrap();
         std::process::Command::new("gpg")
             .arg("--batch")
             .arg("--gen-key")
@@ -72,7 +70,7 @@ Expire-Date: 0
         let fingerprints = std::process::Command::new("gpg")
             .arg("--with-colons")
             .arg("--fingerprint")
-            .arg("root@tachyon.test.user")
+            .arg("tachyon@example.com")
             .output()
             .unwrap();
         let reader = std::io::BufReader::new(fingerprints.stdout.as_slice());
