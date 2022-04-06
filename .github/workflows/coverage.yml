@@ -29,6 +29,8 @@ jobs:
           - 5432:5432
     steps:
       - uses: actions/checkout@v2
+      - name: Install Nettle
+        run:  apt-get install -y nettle-dev
       - name: Install Rust
         run: rustup toolchain install nightly --component llvm-tools-preview
       - name: Install cargo-llvm-cov

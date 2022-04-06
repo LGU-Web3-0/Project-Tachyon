@@ -19,7 +19,7 @@ pub struct UserInfo {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct PasswordChange {
+pub struct PasswordForgot {
     pub email: String,
     pub token: Uuid,
 }

@@ -317,11 +317,14 @@ pub async fn add(
 
 #[cfg(test)]
 mod test {
+    use actix_web::test::read_body_json;
+
     #[cfg(all(not(miri), test, feature = "integration-test"))]
     #[actix_rt::test]
     #[serial_test::serial]
     async fn it_adds_user() {
         use crate::routers::api::user::*;
+        use actix_web::dev::ServiceResponse;
         use actix_web::test;
         crate::test_env!(|app| async move {
             let req = test::TestRequest::post()
@@ -337,16 +340,100 @@ mod test {
                 .to_request();
             let resp: UserAddResult = test::call_and_read_body_json(&app, req).await;
             assert!(resp.success);
+            for _ in 0..10 {
+                let req = test::TestRequest::post()
+                    .uri("/api/user/login")
+                    .set_json(&UserLogin {
+                        email: "i@zhuyi.fan".to_string(),
+                        password: "123456".to_string(),
+                        signature: None,
+                    })
+                    .to_request();
+                let resp: ServiceResponse<_> = test::call_service(&app, req).await;
+                let mut session_cookie = None;
+                for i in resp.response().cookies() {
+                    if i.name() == "tachyon_id" {
+                        session_cookie.replace(i);
+                    }
+                }
+                assert_eq!(resp.status(), StatusCode::OK);
+                let req = test::TestRequest::post()
+                    .uri("/api/user/logout")
+                    .cookie(session_cookie.unwrap())
+                    .to_request();
+                let resp: ServiceResponse<_> = test::call_service(&app, req).await;
+                assert_eq!(resp.status(), StatusCode::OK);
+            }
+        })
+    }
+
+    #[cfg(all(not(miri), test, feature = "integration-test"))]
+    #[actix_rt::test]
+    #[serial_test::serial]
+    async fn it_locks_and_unlocks_user() {
+        use crate::routers::api::user::*;
+        use actix_web::dev::ServiceResponse;
+        use actix_web::test;
+        let helper = crate::test::GPGHelper::new();
+        crate::test_env!(|app| async move {
+            let req = test::TestRequest::post()
+                .uri("/api/user/add")
+                .set_json(&UserAddRequest {
+                    name: "schrodinger".to_string(),
+                    email: "i@zhuyi.fan".to_string(),
+                    password: "123456".to_string(),
+                    gpg_key: helper.armored_public_key(),
+                    #[cfg(feature = "integration-test")]
+                    no_session: Some(true),
+                })
+                .to_request();
+            let resp: UserAddResult = test::call_and_read_body_json(&app, req).await;
+            assert!(resp.success);
+            for _ in 0..10 {
+                let req = test::TestRequest::post()
+                    .uri("/api/user/login")
+                    .set_json(&UserLogin {
+                        email: "i@zhuyi.fan".to_string(),
+                        password: "1234567".to_string(),
+                        signature: None,
+                    })
+                    .to_request();
+                test::call_service(&app, req).await;
+            }
+
             let req = test::TestRequest::post()
                 .uri("/api/user/login")
                 .set_json(&UserLogin {
                     email: "i@zhuyi.fan".to_string(),
-                    password: "123456".to_string(),
+                    password: "1234567".to_string(),
                     signature: None,
                 })
                 .to_request();
-            let resp: UserLoginResult = test::call_and_read_body_json(&app, req).await;
-            assert!(resp.success);
+            let resp: ServiceResponse<_> = test::call_service(&app, req).await;
+            assert_eq!(resp.status(), StatusCode::LOCKED);
+
+            let mut session_cookie = None;
+            for i in resp.response().cookies() {
+                if i.name() == "tachyon_id" {
+                    session_cookie.replace(i.into_owned());
+                }
+            }
+            let json: UserLoginResult = read_body_json(resp).await;
+            let message = json.signature_requirement.unwrap().to_string();
+            let signature = helper.signature(message);
+            println!("{}", signature);
+            let req = test::TestRequest::post()
+                .uri("/api/user/login")
+                .cookie(session_cookie.unwrap())
+                .set_json(&UserLogin {
+                    email: "i@zhuyi.fan".to_string(),
+                    password: "123456".to_string(),
+                    signature: Some(signature),
+                })
+                .to_request();
+            let res: UserLoginResult = test::call_and_read_body_json(&app, req).await;
+            dbg!(&res);
+            assert!(res.success);
         })
     }
 }
