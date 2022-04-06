@@ -70,14 +70,20 @@ Expire-Date: 0
             .unwrap();
         std::thread::sleep(Duration::from_secs(1));
         let fingerprints = std::process::Command::new("gpg")
+            .arg("--with-colons")
             .arg("--fingerprint")
             .arg("root@tachyon.test.user")
             .output()
             .unwrap();
         let reader = std::io::BufReader::new(fingerprints.stdout.as_slice());
         let mut lines = reader.lines();
-        lines.next().unwrap().unwrap();
-        let fingerprint = lines.next().unwrap().unwrap().trim().to_string();
+        let mut fingerprint = String::new();
+        while let Some(Ok(line)) = lines.next() {
+            if line.starts_with("fpr") {
+                fingerprint = line.trim_start_matches("fpr").trim_matches(':').to_string();
+                break;
+            }
+        };
         println!("created GPG key: {}", fingerprint);
         Self { fingerprint }
     }
