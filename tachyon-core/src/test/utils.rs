@@ -47,7 +47,7 @@ impl GPGHelper {
     pub fn new() -> Self {
         let mut file = tempfile::NamedTempFile::new().unwrap();
         file.write_all(
-                r#"Key-Type: default
+            r#"Key-Type: default
 Subkey-Type: default
 Key-Usage: encrypt,sign,auth
 Name-Real: Tachyon User
@@ -81,7 +81,7 @@ Expire-Date: 0
                 fingerprint = line.trim_start_matches("fpr").trim_matches(':').to_string();
                 break;
             }
-        };
+        }
         println!("created GPG key: {}", fingerprint);
         Self { fingerprint }
     }
