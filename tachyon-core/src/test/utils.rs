@@ -72,7 +72,6 @@ Expire-Date: 0
         let fingerprints = std::process::Command::new("gpg")
             .arg("--fingerprint")
             .arg("root@tachyon.test.user")
-            .arg(file.path())
             .output()
             .unwrap();
         let reader = std::io::BufReader::new(fingerprints.stdout.as_slice());
