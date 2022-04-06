@@ -140,6 +140,7 @@ mod test {
         test_env!(|_| async {})
     }
 
+    #[test]
     #[serial_test::serial]
     #[cfg_attr(miri, ignore)]
     fn it_creates_gpg() {
