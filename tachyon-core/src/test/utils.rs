@@ -142,10 +142,9 @@ mod test {
         test_env!(|_| async {})
     }
 
-    #[actix_rt::test]
     #[serial_test::serial]
     #[cfg_attr(miri, ignore)]
-    async fn it_creates_gpg() {
+    fn it_creates_gpg() {
         use super::*;
         let helper = GPGHelper::new();
         let model =
