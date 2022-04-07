@@ -229,6 +229,18 @@ mod test {
             assert!(res.contains("We are unable to handle your request"));
 
             let req = actix_web::test::TestRequest::get()
+                .uri("/static/")
+                .to_request();
+            let res: actix_web::dev::ServiceResponse<_> =
+                actix_web::test::call_service(&app, req).await;
+            assert_eq!(res.status(), actix_web::http::StatusCode::FORBIDDEN);
+            let res = actix_web::test::read_body(res).await;
+            let res = String::from_utf8(res.to_vec()).unwrap();
+            assert!(res.contains("403"));
+            assert!(res.contains("Oops!"));
+            assert!(res.contains("We are unable to handle your request"));
+
+            let req = actix_web::test::TestRequest::get()
                 .uri("/static/logo/logo.jpeg")
                 .to_request();
             let res: actix_web::dev::ServiceResponse<_> =
