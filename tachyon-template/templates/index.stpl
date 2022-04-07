@@ -26,7 +26,7 @@
                     <div id="signature" hidden>
                         <div class="mb-4 flex flex-col space-y-4">
                             <label class="font-bold text-grey-darker block mb-2">Signature</label>
-                            <a class="text-red-400 py-1 px-1 text-xs">You account is locked. Use the following code to generate a signature:</a>
+                            <a class="text-red-400 py-1 px-1 text-xs">Your account is locked. Use the following code to generate a signature:</a>
                             <pre class="bg-slate-200 rounded text-xs overflow-x-auto"><code class="language-bash ml-2 mr-2">printf %s "<a id="signature-token"></a>" | gpg --armor --detach-sign -z 0</code></pre>
                             <textarea id="signature-input" class="block appearance-none w-full bg-white border border-grey-light hover:border-grey px-2 py-2 rounded shadow"></textarea>
                         </div>
