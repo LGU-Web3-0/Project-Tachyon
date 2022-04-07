@@ -1,14 +1,14 @@
 mod api;
 mod view;
 
+use crate::session::UserInfo;
 use actix_files::{Directory, Files};
+use actix_session::Session;
 use actix_web::dev::{fn_service, ServiceRequest, ServiceResponse};
 use actix_web::error::ErrorNotFound;
 use actix_web::{web, HttpRequest, HttpResponse, Result, Scope};
 use std::path::Path;
-use actix_session::Session;
 use tachyon_template::AsyncRenderOnce;
-use crate::session::UserInfo;
 
 async fn forbidden(req: ServiceRequest) -> Result<ServiceResponse> {
     Ok(ServiceResponse::new(
