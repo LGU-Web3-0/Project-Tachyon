@@ -14,14 +14,14 @@ pub use view::error::error_handler;
 async fn forbidden(req: ServiceRequest) -> Result<ServiceResponse> {
     Ok(ServiceResponse::new(
         req.into_parts().0,
-        HttpResponse::Forbidden().body("forbidden"),
+        HttpResponse::Forbidden().body(()),
     ))
 }
 
 fn forbidden_index(_: &Directory, req: &HttpRequest) -> std::io::Result<ServiceResponse> {
     Ok(ServiceResponse::new(
         req.clone(),
-        HttpResponse::Forbidden().body("forbidden"),
+        HttpResponse::Forbidden().body(()),
     ))
 }
 
