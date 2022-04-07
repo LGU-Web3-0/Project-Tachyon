@@ -19,6 +19,25 @@ macro_rules! test_env {
         #[allow(unused_variables)]
         let app = actix_web::test::init_service(
             actix_web::App::new()
+                .wrap(
+                    actix_web::middleware::ErrorHandlers::new()
+                        .handler(
+                            actix_web::http::StatusCode::NOT_FOUND,
+                            $crate::routers::add_error_header,
+                        )
+                        .handler(
+                            actix_web::http::StatusCode::UNAUTHORIZED,
+                            $crate::routers::add_error_header,
+                        )
+                        .handler(
+                            actix_web::http::StatusCode::INTERNAL_SERVER_ERROR,
+                            $crate::routers::add_error_header,
+                        )
+                        .handler(
+                            actix_web::http::StatusCode::BAD_REQUEST,
+                            $crate::routers::add_error_header,
+                        ),
+                )
                 .wrap(actix_web::middleware::Compress::default())
                 .wrap(actix_web::middleware::Logger::default())
                 .wrap(

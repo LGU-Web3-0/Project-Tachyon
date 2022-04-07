@@ -1,4 +1,5 @@
 #![feature(backtrace)]
+#![feature(option_result_contains)]
 #![cfg_attr(feature = "integration-test", feature(exit_status_error))]
 extern crate core;
 
@@ -8,6 +9,7 @@ use crate::utils::{IntoAnyhow, LoggedUnwrap};
 use actix_cors::Cors;
 use actix_session::storage::{RedisSessionStore, SessionStore};
 use actix_web::cookie::SameSite;
+use actix_web::http::StatusCode;
 use actix_web::web::Data;
 use clap::Parser;
 use std::path::PathBuf;
@@ -62,6 +64,13 @@ where
                 .map(|x| x.middleware())
                 .unwrap_or_else(Cors::default);
             actix_web::App::new()
+                .wrap(
+                    actix_web::middleware::ErrorHandlers::new()
+                        .handler(StatusCode::NOT_FOUND, routers::add_error_header)
+                        .handler(StatusCode::UNAUTHORIZED, routers::add_error_header)
+                        .handler(StatusCode::INTERNAL_SERVER_ERROR, routers::add_error_header)
+                        .handler(StatusCode::BAD_REQUEST, routers::add_error_header),
+                )
                 .wrap(actix_web::middleware::Compress::default())
                 // enable logger
                 .wrap(actix_web::middleware::Logger::default())

@@ -1,8 +1,12 @@
 use actix_web::error::ErrorInternalServerError;
 use actix_web::{HttpResponse, Result};
 use async_trait::async_trait;
-use sailfish::TemplateOnce;
 pub use sailfish::*;
+mod error;
+mod index;
+
+pub use error::*;
+pub use index::*;
 
 #[async_trait]
 pub trait AsyncRenderOnce: Sized {
@@ -56,20 +60,6 @@ impl HelloTemplate {
     pub fn new<S: AsRef<str>, I: Iterator<Item = S>>(input: I) -> Self {
         Self {
             messages: input.map(|x| x.as_ref().to_string()).collect(),
-        }
-    }
-}
-
-#[derive(TemplateOnce)]
-#[template(path = "index.stpl")]
-pub struct IndexTemplate {
-    pub title: String,
-}
-
-impl IndexTemplate {
-    pub fn new<S: AsRef<str>>(input: S) -> Self {
-        Self {
-            title: input.as_ref().to_string(),
         }
     }
 }
