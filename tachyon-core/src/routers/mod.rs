@@ -6,7 +6,9 @@ use actix_web::dev::{fn_service, ServiceRequest, ServiceResponse};
 use actix_web::error::ErrorNotFound;
 use actix_web::{web, HttpRequest, HttpResponse, Result, Scope};
 use std::path::Path;
+use actix_session::Session;
 use tachyon_template::AsyncRenderOnce;
+use crate::session::UserInfo;
 
 async fn forbidden(req: ServiceRequest) -> Result<ServiceResponse> {
     Ok(ServiceResponse::new(
@@ -30,10 +32,16 @@ async fn frontend(path: web::Path<String>) -> Result<HttpResponse> {
     }
 }
 
-async fn index() -> Result<HttpResponse> {
-    tachyon_template::IndexTemplate::new("Project Tachyon")
-        .render_response()
-        .await
+async fn index(session: Session) -> Result<HttpResponse> {
+    if let Ok(Some(_)) = session.get::<UserInfo>("user") {
+        HttpResponse::TemporaryRedirect()
+            .append_header(("Location", "/view/dashboard"))
+            .await
+    } else {
+        tachyon_template::IndexTemplate::new("Project Tachyon")
+            .render_response()
+            .await
+    }
 }
 
 pub fn routers<S: AsRef<Path>>(static_path: S) -> Scope {
