@@ -62,6 +62,7 @@ where
                 .map(|x| x.middleware())
                 .unwrap_or_else(Cors::default);
             actix_web::App::new()
+                .wrap(actix_web::middleware::Compress::default())
                 // enable logger
                 .wrap(actix_web::middleware::Logger::default())
                 // cookie session middleware
