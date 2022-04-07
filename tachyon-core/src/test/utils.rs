@@ -19,6 +19,7 @@ macro_rules! test_env {
         #[allow(unused_variables)]
         let app = actix_web::test::init_service(
             actix_web::App::new()
+                .wrap(actix_web::middleware::Compress::default())
                 .wrap(actix_web::middleware::Logger::default())
                 .wrap(
                     actix_session::SessionMiddleware::builder(_session, _state.key.clone())

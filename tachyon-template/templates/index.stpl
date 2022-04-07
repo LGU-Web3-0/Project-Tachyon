@@ -3,23 +3,37 @@
     <head>
         <% include!("header.stpl"); %>
     </head>
-    <body class="bg-grey-lighter h-screen font-sans">
-        <div class="container mx-auto h-full flex justify-center items-center">
+    <body class="h-screen font-sans bg-cover bg-[url('/static/img/login-bg.jpg')] subpixel-antialiased">
+        <div class="container mx-auto h-full flex justify-center items-center opacity-80">
             <div class="w-1/3">
-                <h1 class="font-hairline mb-6 text-center">Login to our Website</h1>
                 <div class="border-teal p-8 border-t-12 bg-white mb-6 rounded-lg shadow-lg">
+
+                    <div id="message" hidden>
+                        <div id="message-content" class="text-red-400 text-xs">
+                        </div>
+                    </div>
+
                     <div class="mb-4">
-                        <label class="font-bold text-grey-darker block mb-2">Username or Email</label>
-                        <input type="text" class="block appearance-none w-full bg-white border border-grey-light hover:border-grey px-2 py-2 rounded shadow" placeholder="Your Username">
+                        <label class="font-bold text-grey-darker block mb-2">Email</label>
+                        <input id="email" type="text" class="block appearance-none w-full bg-white border border-grey-light hover:border-grey px-2 py-2 rounded shadow" placeholder="Your Email" />
                     </div>
 
                     <div class="mb-4">
                         <label class="font-bold text-grey-darker block mb-2">Password</label>
-                        <input type="text" class="block appearance-none w-full bg-white border border-grey-light hover:border-grey px-2 py-2 rounded shadow" placeholder="Your Password">
+                        <input id="password" type="text" class="block appearance-none w-full bg-white border border-grey-light hover:border-grey px-2 py-2 rounded shadow" placeholder="Your Password" />
+                    </div>
+
+                    <div id="signature" hidden>
+                        <div class="mb-4 flex flex-col space-y-4">
+                            <label class="font-bold text-grey-darker block mb-2">Signature</label>
+                            <a class="text-red-400 py-1 px-1 text-xs">Your account is locked. Use the following code to generate a signature:</a>
+                            <pre class="bg-slate-200 rounded text-xs overflow-x-auto"><code class="language-bash ml-2 mr-2">printf %s "<a id="signature-token"></a>" | gpg --armor --detach-sign -z 0</code></pre>
+                            <textarea id="signature-input" class="block appearance-none w-full bg-white border border-grey-light hover:border-grey px-2 py-2 rounded shadow"></textarea>
+                        </div>
                     </div>
 
                     <div class="flex items-center justify-between">
-                        <button class="bg-teal-dark hover:bg-teal text-white font-bold py-2 px-4 rounded">
+                        <button onclick="Tachyon.Auth.login_onclick()" class="px-4 py-2 font-semibold text-sm bg-blue-500 text-white rounded-md shadow-sm hover:-translate-y-1 hover:scale-110 hover:bg-indigo-500 ease-in-out delay-150 duration-300">
                             Login
                         </button>
 
@@ -28,9 +42,6 @@
                         </a>
                     </div>
 
-                </div>
-                <div class="text-center">
-                    <p class="text-grey-dark text-sm">Don't have an account? <a href="#" class="no-underline text-blue font-bold">Create an Account</a>.</p>
                 </div>
             </div>
         </div>

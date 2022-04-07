@@ -1,7 +1,9 @@
 mod api;
 mod view;
 
+use crate::session::UserInfo;
 use actix_files::{Directory, Files};
+use actix_session::Session;
 use actix_web::dev::{fn_service, ServiceRequest, ServiceResponse};
 use actix_web::error::ErrorNotFound;
 use actix_web::{web, HttpRequest, HttpResponse, Result, Scope};
@@ -30,10 +32,16 @@ async fn frontend(path: web::Path<String>) -> Result<HttpResponse> {
     }
 }
 
-async fn index() -> Result<HttpResponse> {
-    tachyon_template::IndexTemplate::new("Project Tachyon")
-        .render_response()
-        .await
+async fn index(session: Session) -> Result<HttpResponse> {
+    if let Ok(Some(_)) = session.get::<UserInfo>("user") {
+        HttpResponse::TemporaryRedirect()
+            .append_header(("Location", "/view/dashboard"))
+            .await
+    } else {
+        tachyon_template::IndexTemplate::new("Project Tachyon")
+            .render_response()
+            .await
+    }
 }
 
 pub fn routers<S: AsRef<Path>>(static_path: S) -> Scope {
