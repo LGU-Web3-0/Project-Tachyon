@@ -182,4 +182,35 @@ mod test {
             .verify_signature(helper.signature("123"), "123")
             .unwrap())
     }
+
+    #[actix_rt::test]
+    #[serial_test::serial]
+    #[cfg_attr(miri, ignore)]
+    async fn it_handles_error_properly() {
+        test_env!(|app| async move {
+            let req = actix_web::test::TestRequest::post()
+                .uri("/api/user/login")
+                .append_header(("content-type", "application/json"))
+                .set_payload(
+                    r#"
+                    {
+                        "email" : "i@zhuyi.fan",
+                        "password" : "123456"
+                    }
+                 "#,
+                )
+                .to_request();
+            let res = actix_web::test::call_and_read_body(&app, req).await;
+            let res = String::from_utf8(res.to_vec()).unwrap();
+            assert!(res.contains(r#""success":false"#));
+            let req = actix_web::test::TestRequest::get()
+                .uri("/api/user/login")
+                .to_request();
+            let res = actix_web::test::call_and_read_body(&app, req).await;
+            let res = String::from_utf8(res.to_vec()).unwrap();
+            assert!(res.contains("404"));
+            assert!(res.contains("Oops!"));
+            assert!(res.contains("We are unable to handle your request"));
+        })
+    }
 }
