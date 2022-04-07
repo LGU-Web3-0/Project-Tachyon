@@ -6,7 +6,7 @@ use actix_web::middleware::ErrorHandlerResponse;
 use actix_web::{dev, Result};
 use tachyon_template::{ErrorTemplate, TemplateOnce};
 
-pub fn add_error_header<B>(res: dev::ServiceResponse<B>) -> Result<ErrorHandlerResponse<B>>
+pub fn error_handler<B>(res: dev::ServiceResponse<B>) -> Result<ErrorHandlerResponse<B>>
 where
     B: MessageBody + 'static,
 {

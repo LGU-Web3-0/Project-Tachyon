@@ -23,19 +23,23 @@ macro_rules! test_env {
                     actix_web::middleware::ErrorHandlers::new()
                         .handler(
                             actix_web::http::StatusCode::NOT_FOUND,
-                            $crate::routers::add_error_header,
+                            $crate::routers::error_handler,
                         )
                         .handler(
                             actix_web::http::StatusCode::UNAUTHORIZED,
-                            $crate::routers::add_error_header,
+                            $crate::routers::error_handler,
                         )
                         .handler(
                             actix_web::http::StatusCode::INTERNAL_SERVER_ERROR,
-                            $crate::routers::add_error_header,
+                            $crate::routers::error_handler,
+                        )
+                        .handler(
+                            actix_web::http::StatusCode::FORBIDDEN,
+                            $crate::routers::error_handler,
                         )
                         .handler(
                             actix_web::http::StatusCode::BAD_REQUEST,
-                            $crate::routers::add_error_header,
+                            $crate::routers::error_handler,
                         ),
                 )
                 .wrap(actix_web::middleware::Compress::default())

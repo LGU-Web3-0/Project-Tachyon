@@ -66,10 +66,11 @@ where
             actix_web::App::new()
                 .wrap(
                     actix_web::middleware::ErrorHandlers::new()
-                        .handler(StatusCode::NOT_FOUND, routers::add_error_header)
-                        .handler(StatusCode::UNAUTHORIZED, routers::add_error_header)
-                        .handler(StatusCode::INTERNAL_SERVER_ERROR, routers::add_error_header)
-                        .handler(StatusCode::BAD_REQUEST, routers::add_error_header),
+                        .handler(StatusCode::NOT_FOUND, routers::error_handler)
+                        .handler(StatusCode::UNAUTHORIZED, routers::error_handler)
+                        .handler(StatusCode::INTERNAL_SERVER_ERROR, routers::error_handler)
+                        .handler(StatusCode::FORBIDDEN, routers::error_handler)
+                        .handler(StatusCode::BAD_REQUEST, routers::error_handler),
                 )
                 .wrap(actix_web::middleware::Compress::default())
                 // enable logger

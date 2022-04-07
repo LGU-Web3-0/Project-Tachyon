@@ -9,7 +9,7 @@ use actix_web::error::ErrorNotFound;
 use actix_web::{web, HttpRequest, HttpResponse, Result, Scope};
 use std::path::Path;
 use tachyon_template::AsyncRenderOnce;
-pub use view::error::add_error_header;
+pub use view::error::error_handler;
 
 async fn forbidden(req: ServiceRequest) -> Result<ServiceResponse> {
     Ok(ServiceResponse::new(
