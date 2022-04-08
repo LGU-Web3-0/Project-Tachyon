@@ -20,7 +20,7 @@
 
                     <div class="mb-4">
                         <label class="font-bold text-grey-darker block mb-2">Password</label>
-                        <input id="password" type="text" class="block appearance-none w-full bg-white border border-grey-light hover:border-grey px-2 py-2 rounded shadow" placeholder="Your Password" />
+                        <input id="password" type="password" class="block appearance-none w-full bg-white border border-grey-light hover:border-grey px-2 py-2 rounded shadow" placeholder="Your Password" />
                     </div>
 
                     <div id="signature" hidden>

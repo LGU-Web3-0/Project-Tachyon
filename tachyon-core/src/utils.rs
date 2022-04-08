@@ -1,5 +1,4 @@
 pub use anyhow::Result;
-use std::process::abort;
 
 pub trait LoggedUnwrap {
     type Output;
@@ -18,9 +17,8 @@ impl<T> LoggedUnwrap for Result<T> {
         match self {
             Ok(x) => x,
             Err(y) => {
-                let bt = std::backtrace::Backtrace::force_capture();
-                log::error!("{}\n{}", y, bt);
-                abort()
+                log::error!("{}", y);
+                panic!("server panics due to above error")
             }
         }
     }

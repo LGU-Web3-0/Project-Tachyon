@@ -19,6 +19,29 @@ macro_rules! test_env {
         #[allow(unused_variables)]
         let app = actix_web::test::init_service(
             actix_web::App::new()
+                .wrap(
+                    actix_web::middleware::ErrorHandlers::new()
+                        .handler(
+                            actix_web::http::StatusCode::NOT_FOUND,
+                            $crate::routers::error_handler,
+                        )
+                        .handler(
+                            actix_web::http::StatusCode::UNAUTHORIZED,
+                            $crate::routers::error_handler,
+                        )
+                        .handler(
+                            actix_web::http::StatusCode::INTERNAL_SERVER_ERROR,
+                            $crate::routers::error_handler,
+                        )
+                        .handler(
+                            actix_web::http::StatusCode::FORBIDDEN,
+                            $crate::routers::error_handler,
+                        )
+                        .handler(
+                            actix_web::http::StatusCode::BAD_REQUEST,
+                            $crate::routers::error_handler,
+                        ),
+                )
                 .wrap(actix_web::middleware::Compress::default())
                 .wrap(actix_web::middleware::Logger::default())
                 .wrap(
@@ -162,5 +185,67 @@ mod test {
         assert!(model
             .verify_signature(helper.signature("123"), "123")
             .unwrap())
+    }
+
+    #[actix_rt::test]
+    #[serial_test::serial]
+    #[cfg_attr(miri, ignore)]
+    async fn it_handles_error_properly() {
+        test_env!(|app| async move {
+            let req = actix_web::test::TestRequest::post()
+                .uri("/api/user/login")
+                .append_header(("content-type", "application/json"))
+                .set_payload(
+                    r#"
+                    {
+                        "email" : "i@zhuyi.fan",
+                        "password" : "123456"
+                    }
+                 "#,
+                )
+                .to_request();
+            let res = actix_web::test::call_and_read_body(&app, req).await;
+            let res = String::from_utf8(res.to_vec()).unwrap();
+            assert!(res.contains(r#""success":false"#));
+            let req = actix_web::test::TestRequest::get()
+                .uri("/api/user/login")
+                .to_request();
+            let res = actix_web::test::call_and_read_body(&app, req).await;
+            let res = String::from_utf8(res.to_vec()).unwrap();
+            assert!(res.contains("404"));
+            assert!(res.contains("Oops!"));
+            assert!(res.contains("We are unable to handle your request"));
+
+            let req = actix_web::test::TestRequest::get()
+                .uri("/static/this-resource-does-not-exists.jpg")
+                .to_request();
+            let res: actix_web::dev::ServiceResponse<_> =
+                actix_web::test::call_service(&app, req).await;
+            assert_eq!(res.status(), actix_web::http::StatusCode::FORBIDDEN);
+            let res = actix_web::test::read_body(res).await;
+            let res = String::from_utf8(res.to_vec()).unwrap();
+            assert!(res.contains("403"));
+            assert!(res.contains("Oops!"));
+            assert!(res.contains("We are unable to handle your request"));
+
+            let req = actix_web::test::TestRequest::get()
+                .uri("/static/")
+                .to_request();
+            let res: actix_web::dev::ServiceResponse<_> =
+                actix_web::test::call_service(&app, req).await;
+            assert_eq!(res.status(), actix_web::http::StatusCode::FORBIDDEN);
+            let res = actix_web::test::read_body(res).await;
+            let res = String::from_utf8(res.to_vec()).unwrap();
+            assert!(res.contains("403"));
+            assert!(res.contains("Oops!"));
+            assert!(res.contains("We are unable to handle your request"));
+
+            let req = actix_web::test::TestRequest::get()
+                .uri("/static/logo/logo.jpeg")
+                .to_request();
+            let res: actix_web::dev::ServiceResponse<_> =
+                actix_web::test::call_service(&app, req).await;
+            assert_eq!(res.status(), actix_web::http::StatusCode::OK);
+        })
     }
 }

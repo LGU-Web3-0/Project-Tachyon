@@ -9,18 +9,19 @@ use actix_web::error::ErrorNotFound;
 use actix_web::{web, HttpRequest, HttpResponse, Result, Scope};
 use std::path::Path;
 use tachyon_template::AsyncRenderOnce;
+pub use view::error::error_handler;
 
 async fn forbidden(req: ServiceRequest) -> Result<ServiceResponse> {
     Ok(ServiceResponse::new(
         req.into_parts().0,
-        HttpResponse::Forbidden().body("forbidden"),
+        HttpResponse::Forbidden().body(()),
     ))
 }
 
 fn forbidden_index(_: &Directory, req: &HttpRequest) -> std::io::Result<ServiceResponse> {
     Ok(ServiceResponse::new(
         req.clone(),
-        HttpResponse::Forbidden().body("forbidden"),
+        HttpResponse::Forbidden().body(()),
     ))
 }
 
