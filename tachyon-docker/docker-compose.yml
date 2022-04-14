@@ -24,6 +24,8 @@ services:
       - "redis:redis"
     environment:
       - DATABASE_URL=postgres://postgres@postgres/test
+    ulimits:
+      memlock: -1
     volumes:
       - type: bind
         source: ../
