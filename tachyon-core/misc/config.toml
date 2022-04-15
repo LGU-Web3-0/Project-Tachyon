@@ -3,6 +3,7 @@ server_addr = "0.0.0.0:8000"
 sled_dir = "/sled"
 redis_uri = "redis://redis:6379"
 static_dir = "static"
+log_level = "debug"
 
 [cors]
 origin = "*"

@@ -116,7 +116,7 @@ async fn main() -> anyhow::Result<()> {
     let redis = RedisSessionStore::new(&redis_uri).await.logged_unwrap();
     log::info!("starting server at {}", configs.server_addr);
     startup(
-        opt.log_level.as_str(),
+        configs.log_level.as_ref(),
         configs.static_dir.clone(),
         Arc::new(move || state.clone()),
         Arc::new(move || cors_config.clone()),
