@@ -4,6 +4,7 @@ use async_trait::async_trait;
 pub use sailfish::*;
 mod error;
 mod index;
+pub mod view;
 
 pub use error::*;
 pub use index::*;
