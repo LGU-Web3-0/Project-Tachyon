@@ -25,7 +25,7 @@ where
     }
     let status = res.status();
     let (req, res) = res.into_parts();
-    let res = res.set_body(
+    let mut res = res.set_body(
         ErrorTemplate::new(
             format!(
                 "{} | Tachyon Project",
@@ -36,6 +36,11 @@ where
         .render_once()
         .anyhow()
         .logged_unwrap(),
+    );
+
+    res.headers_mut().insert(
+        actix_web::http::header::CONTENT_TYPE,
+        actix_web::http::header::HeaderValue::from_static("text/html;charset=utf-8"),
     );
 
     let res = ServiceResponse::new(req, res)
