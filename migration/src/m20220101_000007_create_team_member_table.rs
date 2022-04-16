@@ -41,7 +41,10 @@ impl MigrationTrait for Migration {
                     .foreign_key(
                         ForeignKey::create()
                             .name("fk-team_id-teamId")
-                            .from(entity::team_member::Entity, entity::team_member::Column::TeamId)
+                            .from(
+                                entity::team_member::Entity,
+                                entity::team_member::Column::TeamId,
+                            )
                             .to(entity::team::Entity, entity::team::Column::Id)
                             .on_delete(ForeignKeyAction::Cascade)
                             .on_update(ForeignKeyAction::Cascade),
@@ -49,7 +52,10 @@ impl MigrationTrait for Migration {
                     .foreign_key(
                         ForeignKey::create()
                             .name("fk-user_id-userId")
-                            .from(entity::team_member::Entity, entity::team_member::Column::UserId)
+                            .from(
+                                entity::team_member::Entity,
+                                entity::team_member::Column::UserId,
+                            )
                             .to(entity::user::Entity, entity::user::Column::Id)
                             .on_delete(ForeignKeyAction::Cascade)
                             .on_update(ForeignKeyAction::Cascade),
