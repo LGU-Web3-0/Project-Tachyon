@@ -51,7 +51,7 @@ pub async fn handler(
         );
         page = page.filter(expr);
     }
-    let page_size = request.page_size.unwrap_or(15);
+    let page_size = request.page_size.unwrap_or(10);
     let paginator = page
         .order_by(entity::user::Column::Id, Order::Asc)
         .paginate(&data.sql_db, page_size);
