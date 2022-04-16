@@ -24,20 +24,21 @@ impl MigrationTrait for Migration {
                             .primary_key(),
                     )
                     .col(
+                        ColumnDef::new(entity::task::Column::Name)
+                            .string()
+                            .not_null(),
+                    )
+                    .col(
                         ColumnDef::new(entity::task::Column::CreateDate)
-                            .timestamp()
+                            .timestamp_with_time_zone()
                             .not_null(),
                     )
                     .col(
                         ColumnDef::new(entity::task::Column::DueDate)
-                            .timestamp()
+                            .timestamp_with_time_zone()
                             .not_null(),
                     )
-                    .col(
-                        ColumnDef::new(entity::task::Column::FinishDate)
-                            .timestamp()
-                            .not_null(),
-                    )
+                    .col(ColumnDef::new(entity::task::Column::FinishDate).timestamp())
                     .if_not_exists()
                     .to_owned(),
             )
