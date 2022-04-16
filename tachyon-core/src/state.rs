@@ -14,7 +14,12 @@ impl State {
     pub async fn from_configs(configs: &Configs) -> Result<Self> {
         let sql_db = Database::connect(&configs.db_uri).await?;
         let kv_db = sled::Config::new().path(&configs.sled_dir).open()?;
-        let key = Key::try_generate().ok_or_else(|| anyhow!("unable to generate cookie key"))?;
+
+        let key = if let Some(key) = configs.fixed_key.as_ref() {
+            Key::derive_from(key.as_bytes())
+        } else {
+            Key::try_generate().ok_or_else(|| anyhow!("unable to generate cookie key"))?
+        };
         Ok(State { sql_db, kv_db, key })
     }
 

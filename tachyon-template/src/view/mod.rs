@@ -1,5 +1,8 @@
 mod dashboard;
+mod user;
 pub use dashboard::*;
+use md5::Digest;
+pub use user::*;
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Copy, Debug)]
 enum LeftBarItem {
@@ -7,7 +10,7 @@ enum LeftBarItem {
     Projects,
     MyTasks,
     Calendar,
-    TimeManage,
+    User,
     Reports,
     Settings,
 }
@@ -21,4 +24,10 @@ trait LeftBar {
             "leftbar-inactive"
         }
     }
+}
+
+fn email_hash<S: AsRef<str>>(email: S) -> String {
+    let mut email_hasher = md5::Md5::new();
+    email_hasher.update(email.as_ref().as_bytes());
+    format!("{:x}", email_hasher.finalize())
 }
