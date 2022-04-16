@@ -30,7 +30,7 @@ export namespace Auth {
         }
     }
 
-    export async function login(email: string, password: string, signature?: string): Promise<LoginResult> {
+    async function login(email: string, password: string, signature?: string): Promise<LoginResult> {
         let request = {
             email,
             password,
@@ -46,6 +46,19 @@ export namespace Auth {
         });
 
         return await response.json()
+    }
+
+    export async function logout_onclick() {
+        const response = await window.fetch("/api/user/logout", {
+            method: 'post',
+            headers: {
+                'content-type': 'application/json;charset=UTF-8',
+            },
+        });
+
+        if (response.status === 200) {
+            window.location.href = '/'
+        }
     }
 }
 
