@@ -58,7 +58,7 @@ mod up {
                     ON "user"
                     FOR EACH ROW
                     EXECUTE PROCEDURE
-                        tsvector_update_trigger(user_search_vector, 'pg_catelog.english', name, email);
+                        tsvector_update_trigger(user_search_vector, 'pg_catalog.english', name, email);
                 "#;
                     Statement::from_string(DbBackend::Postgres, STMT.to_string())
                 }
