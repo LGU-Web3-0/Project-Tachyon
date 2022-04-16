@@ -17,7 +17,7 @@ pub struct Model {
     pub name: String,
     pub create_date: DateTimeUtc,
     pub due_date: DateTimeUtc,
-    pub finish_date: DateTimeUtc,
+    pub finish_date: Option<DateTimeUtc>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveColumn)]
@@ -50,8 +50,8 @@ impl ColumnTrait for Column {
         match self {
             Self::Id => ColumnType::BigInteger.def().unique().indexed(),
             Self::Name => ColumnType::String(None).def(),
-            Self::CreateDate => ColumnType::Timestamp.def(),
-            Self::DueDate => ColumnType::Timestamp.def(),
+            Self::CreateDate => ColumnType::TimestampWithTimeZone.def(),
+            Self::DueDate => ColumnType::TimestampWithTimeZone.def(),
             Self::FinishDate => ColumnType::Timestamp.def(),
         }
     }

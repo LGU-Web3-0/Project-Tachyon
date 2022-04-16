@@ -57,7 +57,6 @@ pub async fn add_task(
             }
         }
     }
-
     let mut status = http::StatusCode::OK;
     let json = match session.get::<UserInfo>("user") {
         Err(e) => {
