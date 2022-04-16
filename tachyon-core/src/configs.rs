@@ -27,6 +27,7 @@ pub struct Configs {
     pub sled_dir: PathBuf,
     pub static_dir: PathBuf,
     pub cors: Option<CORSConfig>,
+    pub fixed_key: Option<String>,
     pub log_level: String,
 }
 
