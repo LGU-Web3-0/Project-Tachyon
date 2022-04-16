@@ -6,10 +6,10 @@ const postcss = require('gulp-postcss')
 const sourcemaps = require('gulp-sourcemaps')
 
 gulp.task("default", function () {
-    return tsProject
+    const js = tsProject
         .src()
-        .pipe(tsProject())
-        .js
+        .pipe(tsProject());
+    return js
         .pipe(gulp.dest(".tmp"))
         .pipe(webpack(require("./webpack.config.js")))
         .pipe(gulp.dest("dist"));
