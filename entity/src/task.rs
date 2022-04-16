@@ -1,4 +1,5 @@
 use sea_orm::entity::prelude::*;
+use sea_orm::ActiveValue;
 use serde::{Deserialize, Serialize};
 
 #[derive(Copy, Clone, Default, Debug, DeriveEntity)]
@@ -13,6 +14,7 @@ impl EntityName for Entity {
 #[derive(Clone, Debug, PartialEq, DeriveModel, DeriveActiveModel, Deserialize, Serialize)]
 pub struct Model {
     pub id: i64,
+    pub name: String,
     pub create_date: DateTimeUtc,
     pub due_date: DateTimeUtc,
     pub finish_date: DateTimeUtc,
@@ -21,6 +23,7 @@ pub struct Model {
 #[derive(Copy, Clone, Debug, EnumIter, DeriveColumn)]
 pub enum Column {
     Id,
+    Name,
     CreateDate,
     DueDate,
     FinishDate,
@@ -32,7 +35,7 @@ pub enum PrimaryKey {
 }
 
 impl PrimaryKeyTrait for PrimaryKey {
-    type ValueType = Uuid;
+    type ValueType = i64;
     fn auto_increment() -> bool {
         true
     }
@@ -46,6 +49,7 @@ impl ColumnTrait for Column {
     fn def(&self) -> ColumnDef {
         match self {
             Self::Id => ColumnType::BigInteger.def().unique().indexed(),
+            Self::Name => ColumnType::String(None).def(),
             Self::CreateDate => ColumnType::Timestamp.def(),
             Self::DueDate => ColumnType::Timestamp.def(),
             Self::FinishDate => ColumnType::Timestamp.def(),
@@ -60,3 +64,22 @@ impl RelationTrait for Relation {
 }
 
 impl ActiveModelBehavior for ActiveModel {}
+
+impl Model {
+    pub fn prepare<S0>(
+        name: S0,
+        create_date: &DateTimeUtc,
+        due_date: &DateTimeUtc,
+    ) -> anyhow::Result<ActiveModel>
+    where
+        S0: AsRef<str>,
+    {
+        Ok(ActiveModel {
+            id: ActiveValue::NotSet,
+            name: ActiveValue::Set(name.as_ref().to_owned()),
+            create_date: ActiveValue::Set(*create_date),
+            due_date: ActiveValue::Set(*due_date),
+            finish_date: ActiveValue::NotSet,
+        })
+    }
+}

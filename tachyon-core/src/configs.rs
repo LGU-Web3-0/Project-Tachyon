@@ -10,8 +10,6 @@ pub struct Opt {
     /// Path to the config file
     #[clap(long, short, env = "TACHYON_CONFIG", default_value = "./config.toml")]
     pub config_file: PathBuf,
-    #[clap(long, short, env = "TACHYON_LOG", default_value = "info")]
-    pub log_level: log::Level,
 }
 
 impl Opt {
@@ -29,6 +27,8 @@ pub struct Configs {
     pub sled_dir: PathBuf,
     pub static_dir: PathBuf,
     pub cors: Option<CORSConfig>,
+    pub fixed_key: Option<String>,
+    pub log_level: String,
 }
 
 #[derive(Deserialize, Serialize, Debug, Clone)]

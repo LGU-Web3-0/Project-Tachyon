@@ -75,6 +75,11 @@ impl RelationTrait for Relation {
 impl ActiveModelBehavior for ActiveModel {}
 
 impl Model {
+    pub fn fingerprint(&self) -> anyhow::Result<String> {
+        let key = deserialize_pubkey(&self.pgp_key)?;
+        Ok(key.fingerprint().to_string())
+    }
+
     pub fn prepare<S0, S1, S2, S3>(
         name: S0,
         email: S1,

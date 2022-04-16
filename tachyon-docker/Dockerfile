@@ -21,6 +21,6 @@ WORKDIR /tachyon
 
 ENTRYPOINT cargo watch \
     -x "run --all-features --bin migration -- up" \
-    -x "run --all-features --bin tachyon-core -- -l debug -c /tachyon/tachyon-core/misc/config.toml"
+    -x "run --all-features --bin tachyon-core -- -c /tachyon/tachyon-core/misc/config.toml"
 
 
