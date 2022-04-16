@@ -24,6 +24,11 @@ impl MigrationTrait for Migration {
                             .primary_key(),
                     )
                     .col(
+                        ColumnDef::new(entity::task::Column::Name)
+                            .string()
+                            .not_null(),
+                    )
+                    .col(
                         ColumnDef::new(entity::task::Column::CreateDate)
                             .timestamp()
                             .not_null(),
@@ -33,11 +38,7 @@ impl MigrationTrait for Migration {
                             .timestamp()
                             .not_null(),
                     )
-                    .col(
-                        ColumnDef::new(entity::task::Column::FinishDate)
-                            .timestamp()
-                            .not_null(),
-                    )
+                    .col(ColumnDef::new(entity::task::Column::FinishDate).timestamp())
                     .if_not_exists()
                     .to_owned(),
             )
