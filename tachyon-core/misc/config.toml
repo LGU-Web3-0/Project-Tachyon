@@ -4,6 +4,7 @@ sled_dir = "/sled"
 redis_uri = "redis://redis:6379"
 static_dir = "static"
 log_level = "debug"
+fixed_key = "1234567812345678123456781234567812345678123456781234567812345678"
 
 [cors]
 origin = "*"
