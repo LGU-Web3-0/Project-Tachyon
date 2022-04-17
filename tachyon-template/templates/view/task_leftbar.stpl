@@ -1,7 +1,6 @@
 <div class="h-screen hidden lg:block my-4 ml-4 shadow-lg relative w-80">
     <div class="bg-white h-full rounded-2xl dark:bg-gray-700">
         <div class="flex items-center justify-center pt-6">
-            <img src="https://www.gravatar.com/avatar/<%= email_hash %>?s=100"/>
         </div>
         <nav class="mt-6">
             <div>

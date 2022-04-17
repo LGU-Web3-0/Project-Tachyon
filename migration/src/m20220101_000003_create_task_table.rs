@@ -38,7 +38,9 @@ impl MigrationTrait for Migration {
                             .timestamp_with_time_zone()
                             .not_null(),
                     )
-                    .col(ColumnDef::new(entity::task::Column::FinishDate).timestamp())
+                    .col(
+                        ColumnDef::new(entity::task::Column::FinishDate).timestamp_with_time_zone(),
+                    )
                     .if_not_exists()
                     .to_owned(),
             )

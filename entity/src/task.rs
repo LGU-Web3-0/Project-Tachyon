@@ -52,7 +52,7 @@ impl ColumnTrait for Column {
             Self::Name => ColumnType::String(None).def(),
             Self::CreateDate => ColumnType::TimestampWithTimeZone.def(),
             Self::DueDate => ColumnType::TimestampWithTimeZone.def(),
-            Self::FinishDate => ColumnType::Timestamp.def(),
+            Self::FinishDate => ColumnType::TimestampWithTimeZone.def(),
         }
     }
 }
