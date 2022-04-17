@@ -20,7 +20,10 @@ fn convert_task_info<I>(task: I, email: &str) -> Vec<tachyon_template::view::Tas
 where
     I: Iterator<Item = entity::task::Model>,
 {
-    task.map(|t| tachyon_template::view::TaskItem::new(t.id, email.to_string(), t.name))
+    task.map(|t| tachyon_template::view::TaskItem::new(
+            t.id, 
+            email.clone(),
+            t.name))
         .collect()
 }
 
@@ -69,7 +72,7 @@ pub async fn handler(
 ) -> Result<HttpResponse> {
     match session.get::<UserInfo>("user")? {
         None => Err(ErrorUnauthorized("login info not found")),
-        Some(_user) => {
+        Some(user) => {
             let page = entity::task::Entity::find();
             let page_size = request.page_size.unwrap_or(10);
             let paginator = page
