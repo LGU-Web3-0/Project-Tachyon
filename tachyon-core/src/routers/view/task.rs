@@ -71,7 +71,7 @@ pub async fn handler(
 ) -> Result<HttpResponse> {
     match session.get::<UserInfo>("user")? {
         None => Err(ErrorUnauthorized("login info not found")),
-        Some(user) => {
+        Some(_user) => {
             let page = entity::task::Entity::find();
             let page_size = request.page_size.unwrap_or(10);
             let paginator = page
