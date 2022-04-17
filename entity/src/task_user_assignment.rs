@@ -13,17 +13,17 @@ impl EntityName for Entity {
 #[derive(Clone, Debug, PartialEq, DeriveModel, DeriveActiveModel, Serialize, Deserialize)]
 pub struct Model {
     pub id: i64,
-    pub team_id: i64,
+    pub task_id: i64,
     pub user_id: i64,
-    pub assign_data: DateTimeUtc,
+    pub assign_date: DateTimeUtc,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveColumn)]
 pub enum Column {
     Id,
-    TeamId,
+    TaskId,
     UserId,
-    AssignData,
+    AssignDate,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DerivePrimaryKey)]
@@ -46,9 +46,9 @@ impl ColumnTrait for Column {
     fn def(&self) -> ColumnDef {
         match self {
             Self::Id => ColumnType::BigInteger.def().unique().indexed(),
-            Self::TeamId => ColumnType::BigInteger.def(),
+            Self::TaskId => ColumnType::BigInteger.def(),
             Self::UserId => ColumnType::BigInteger.def(),
-            Self::AssignData => ColumnType::TimestampWithTimeZone.def(),
+            Self::AssignDate => ColumnType::TimestampWithTimeZone.def(),
         }
     }
 }

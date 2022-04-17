@@ -24,7 +24,7 @@ impl MigrationTrait for Migration {
                             .primary_key(),
                     )
                     .col(
-                        ColumnDef::new(entity::task_user_assignment::Column::TeamId)
+                        ColumnDef::new(entity::task_user_assignment::Column::TaskId)
                             .big_integer()
                             .not_null(),
                     )
@@ -34,7 +34,7 @@ impl MigrationTrait for Migration {
                             .not_null(),
                     )
                     .col(
-                        ColumnDef::new(entity::task_user_assignment::Column::AssignData)
+                        ColumnDef::new(entity::task_user_assignment::Column::AssignDate)
                             .timestamp_with_time_zone()
                             .not_null(),
                     )
@@ -51,12 +51,12 @@ impl MigrationTrait for Migration {
                     )
                     .foreign_key(
                         ForeignKey::create()
-                            .name("fk-team_id-teamId")
+                            .name("fk-task_id-TaskId")
                             .from(
                                 entity::task_user_assignment::Entity,
-                                entity::task_user_assignment::Column::TeamId,
+                                entity::task_user_assignment::Column::TaskId,
                             )
-                            .to(entity::team::Entity, entity::team::Column::Id)
+                            .to(entity::task::Entity, entity::task::Column::Id)
                             .on_delete(ForeignKeyAction::Cascade)
                             .on_update(ForeignKeyAction::Cascade),
                     )
