@@ -20,6 +20,7 @@ pub struct AddTaskRequest {
     name: String,
     create_date: DateTimeUtc,
     due_date: DateTimeUtc,
+    description: String,
 }
 
 pub async fn add_task(
@@ -38,7 +39,12 @@ pub async fn add_task(
             }
         }
 
-        let prepared = entity::task::Model::prepare(&req.name, &req.create_date, &req.due_date);
+        let prepared = entity::task::Model::prepare(
+            &req.name,
+            &req.create_date,
+            &req.due_date,
+            &req.description,
+        );
         if let Ok(model) = prepared {
             match model.insert(db).await {
                 Ok(_) => AddTaskResult {
