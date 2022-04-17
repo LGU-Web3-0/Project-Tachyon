@@ -20,10 +20,7 @@ fn convert_task_info<I>(task: I, email: &str) -> Vec<tachyon_template::view::Tas
 where
     I: Iterator<Item = entity::task::Model>,
 {
-    task.map(|t| tachyon_template::view::TaskItem::new(
-            t.id, 
-            email.clone(),
-            t.name))
+    task.map(|t| tachyon_template::view::TaskItem::new(t.id, email.clone(), t.name))
         .collect()
 }
 
