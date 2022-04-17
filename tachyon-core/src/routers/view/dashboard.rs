@@ -21,6 +21,7 @@ pub async fn get_related_tasks(
             JOIN task_user_assignment
             ON task_user_assignment.user_id = $1
             ORDER BY task.create_date DESC
+            LIMIT 10
             "#,
             vec![user_info.id.into()],
         ))
