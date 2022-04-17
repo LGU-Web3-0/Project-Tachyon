@@ -9,7 +9,7 @@
 	<body>
 		<main class="bg-gray-100 dark:bg-gray-800 rounded-2xl relative h-screen overflow-hidden relative">
 			<div class="flex items-start justify-between">
-				<% include!("task_leftbar.stpl"); %>
+				<% include!("leftbar.stpl"); %>
 				<div class="flex flex-col w-full pl-0 md:p-4 md:space-y-4">
 					<% include!("hbar.stpl"); %>
 					<div class="container relative left-0 z-50 flex w-2/4 h-auto h-full">
@@ -51,6 +51,10 @@
 											<tr class="bg-white border-b">
 												<td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
 													<%= task.id %>
+												</td>
+												<td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
+													<img class="rounded"
+				  src="https://www.gravatar.com/avatar/<%= email_hash %>?s=20"/>
 												</td>
 												<td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
 													<%= task.name %>
