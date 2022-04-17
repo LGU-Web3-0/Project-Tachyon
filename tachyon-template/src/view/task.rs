@@ -13,12 +13,16 @@ pub struct TaskItem {
 impl TaskItem {
     pub fn new(id: i64, email: String, name: String, description: String) -> Self {
         let email_h = email_hash(&email);
+<<<<<<< HEAD
         Self {
             id,
             name,
             email_h,
             description,
         }
+=======
+        Self { id, name, email_h }
+>>>>>>> 5f1b545 (fix: format)
     }
 }
 
