@@ -10,6 +10,10 @@ export namespace Auth {
 		document.getElementById("add-task-modal").classList.remove("hidden")
 	}
 
+	export async function cancel_task_onclick() {
+		document.getElementById("add-task-modal").classList.add("hidden")
+	}
+
 
 
 
