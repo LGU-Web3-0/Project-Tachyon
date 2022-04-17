@@ -11,11 +11,7 @@ pub struct TaskItem {
 impl TaskItem {
     pub fn new(id: i64, email: String, name: String) -> Self {
         let email_h = email_hash(&email);
-        Self { 
-            id, 
-            name,
-            email_h,
-        }
+        Self { id, name, email_h }
     }
 }
 
