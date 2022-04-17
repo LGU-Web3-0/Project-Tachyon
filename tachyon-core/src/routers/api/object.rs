@@ -1,8 +1,15 @@
-use crate::State;
-use actix_web::http::header::ContentType;
+use crate::session::UserInfo;
+use crate::{State, StatusCode};
+use actix_multipart::Multipart;
+use actix_session::Session;
+use actix_web::error::ErrorInternalServerError;
+use actix_web::http::header::{ContentDisposition, ContentType, DispositionParam, DispositionType};
 use actix_web::web::Bytes;
 use actix_web::{error, web, HttpResponse, Result};
-use entity::sea_orm::EntityTrait;
+use entity::sea_orm::ActiveModelTrait;
+use entity::sea_orm::QueryFilter;
+use entity::sea_orm::{ActiveValue, ColumnTrait, EntityTrait};
+use futures::{StreamExt, TryFutureExt};
 use sled::IVec;
 use std::pin::Pin;
 use std::task::{Context, Poll};
@@ -10,7 +17,8 @@ use uuid::Uuid;
 
 #[derive(Debug, serde::Deserialize, serde::Serialize)]
 pub struct ObjectRequest {
-    uuid: Uuid,
+    uuid: Option<Uuid>,
+    name: Option<String>,
 }
 
 struct ObjectData {
@@ -48,16 +56,150 @@ impl futures::Stream for ObjectData {
     }
 }
 
+#[derive(serde::Deserialize, serde::Serialize, Debug)]
+struct UploadResult {
+    success: bool,
+    message: Option<String>,
+}
+
+pub async fn upload(
+    session: Session,
+    data: web::Data<State>,
+    mut payload: Multipart,
+) -> Result<HttpResponse> {
+    async fn parse_data(payload: &mut Multipart) -> Result<(entity::object::ActiveModel, Vec<u8>)> {
+        let mut model = entity::object::ActiveModel {
+            uuid: ActiveValue::NotSet,
+            name: ActiveValue::NotSet,
+            visibility: ActiveValue::Set(false),
+            upload_time: ActiveValue::Set(chrono::Utc::now()),
+            mimetype: ActiveValue::NotSet,
+        };
+        let mut content = Vec::new();
+        while let Some(item) = payload.next().await {
+            let mut field = item?;
+            match field.name() {
+                "file" => {
+                    while let Some(x) = field.next().await {
+                        content.extend(x?);
+                    }
+                    model.mimetype = ActiveValue::Set(field.content_type().to_string());
+                }
+                "visibility" => {
+                    let mut data = Vec::new();
+                    while let Some(x) = field.next().await {
+                        data.extend(x?);
+                    }
+                    log::error!("{}", String::from_utf8(data.clone()).unwrap());
+                    model.visibility = ActiveValue::Set(data.as_slice() == b"on");
+                }
+                "filename" => {
+                    let mut data = Vec::new();
+                    while let Some(x) = field.next().await {
+                        data.extend(x?);
+                    }
+                    model.name = ActiveValue::Set(
+                        String::from_utf8(data).map_err(ErrorInternalServerError)?,
+                    );
+                }
+                _ => (),
+            }
+        }
+        Ok((model, content))
+    }
+
+    async fn insert_kv(
+        mut model: entity::object::ActiveModel,
+        content: Vec<u8>,
+        data: &web::Data<State>,
+    ) -> Result<entity::object::ActiveModel> {
+        let mut uuid;
+        loop {
+            uuid = Uuid::new_v4();
+            match data
+                .kv_db
+                .compare_and_swap(
+                    uuid.as_bytes(),
+                    Option::<&[u8]>::None,
+                    Some(content.as_slice()),
+                )
+                .map_err(ErrorInternalServerError)
+            {
+                Ok(Ok(_)) => {
+                    model.uuid = ActiveValue::Set(uuid);
+                    break;
+                }
+                Ok(Err(_)) => tokio::task::yield_now().await,
+                Err(e) => return Err(e),
+            }
+        }
+
+        if let Err(e) = data.kv_db.flush_async().await {
+            log::error!("sled insertion error: {}", e);
+            return Err(ErrorInternalServerError(e));
+        };
+
+        Ok(model)
+    }
+    match session.get::<UserInfo>("user")? {
+        None => simd_json::to_string(&UploadResult {
+            success: false,
+            message: Some("unauthorized".to_string()),
+        })
+        .map_err(ErrorInternalServerError)
+        .map(|x| {
+            HttpResponse::Ok()
+                .content_type("application/json")
+                .status(StatusCode::UNAUTHORIZED)
+                .json(UploadResult {
+                    success: false,
+                    message: Some(x),
+                })
+        }),
+        _ => Ok(parse_data(&mut payload)
+            .and_then(|(model, content)| insert_kv(model, content, &data))
+            .and_then(|model| model.insert(&data.sql_db).map_err(ErrorInternalServerError))
+            .await
+            .map(|_| {
+                HttpResponse::Created()
+                    .content_type("application/json")
+                    .json(UploadResult {
+                        success: true,
+                        message: None,
+                    })
+            })
+            .unwrap_or_else(|e| {
+                HttpResponse::BadRequest()
+                    .content_type("application/json")
+                    .json(UploadResult {
+                        success: false,
+                        message: Some(e.to_string()),
+                    })
+            })),
+    }
+}
+
 pub async fn get_handler(
     info: web::Query<ObjectRequest>,
     data: web::Data<State>,
 ) -> Result<HttpResponse> {
     // TODO: auth
-    let metadata: entity::object::Model = entity::object::Entity::find_by_id(info.uuid)
-        .one(&data.sql_db)
-        .await
-        .map_err(error::ErrorNotFound)?
-        .ok_or_else(|| error::ErrorNotFound("not found"))?;
+    let metadata: entity::object::Model = if let Some(uuid) = info.uuid {
+        entity::object::Entity::find_by_id(uuid)
+            .one(&data.sql_db)
+            .await
+            .map_err(error::ErrorNotFound)?
+            .ok_or_else(|| error::ErrorNotFound("not found"))?
+    } else if let Some(name) = &info.name {
+        entity::object::Entity::find()
+            .filter(entity::object::Column::Name.eq(name.as_str()))
+            .one(&data.sql_db)
+            .await
+            .map_err(error::ErrorNotFound)?
+            .ok_or_else(|| error::ErrorNotFound("not found"))?
+    } else {
+        return Err(error::ErrorBadRequest("invalid request"));
+    };
 
     if !metadata.visibility {
         return Err(error::ErrorUnauthorized("target not authorized"));
@@ -77,12 +219,17 @@ pub async fn get_handler(
                 .parse()
                 .map_err(error::ErrorInternalServerError)?,
         ))
+        .insert_header(ContentDisposition {
+            disposition: DispositionType::Attachment,
+            parameters: vec![DispositionParam::Filename(
+                metadata.name.as_str().to_string(),
+            )],
+        })
         .streaming(stream))
 }
 
 #[cfg(test)]
 mod test {
-
     #[cfg(all(not(miri), test))]
     #[actix_rt::test]
     async fn it_polls_fully() {

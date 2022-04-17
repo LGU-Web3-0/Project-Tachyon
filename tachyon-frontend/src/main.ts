@@ -71,6 +71,33 @@ export namespace UserView {
     }
 }
 
+export namespace Obj {
+    export async function upload_onclick() {
+        const form = document.getElementById("upload-form") as HTMLFormElement;
+        const data = new FormData(form);
+        const request = new XMLHttpRequest()
+        request.open("POST", "/api/object/upload")
+        request.onreadystatechange = function () {
+            if (request.readyState === 4) {
+                const result = JSON.parse(request.responseText)
+                const message = document.getElementById("form-message") as HTMLParagraphElement;
+                if (result.success) {
+                    message.hidden = false;
+                    message.textContent = "Upload successful!";
+                    message.classList.remove("text-red-500", "text-sm");
+                    message.classList.add("text-sm", "text-green-500");
+                } else {
+                    message.hidden = false;
+                    message.textContent = "Upload failed: " + result.message;
+                    message.classList.remove("text-green-500", "text-sm");
+                    message.classList.add("text-sm", "text-red-500");
+                }
+            }
+        }
+        request.send(data)
+    }
+}
+
 export function test() {
     console.log('test')
 }

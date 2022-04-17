@@ -1,9 +1,10 @@
 mod dashboard;
+mod object;
 mod user;
 pub use dashboard::*;
 use md5::Digest;
+pub use object::*;
 pub use user::*;
-
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Copy, Debug)]
 enum LeftBarItem {
     Dashboard,
@@ -11,7 +12,7 @@ enum LeftBarItem {
     MyTasks,
     Calendar,
     User,
-    Reports,
+    Objects,
     Settings,
 }
 

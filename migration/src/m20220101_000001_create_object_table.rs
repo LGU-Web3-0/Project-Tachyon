@@ -35,7 +35,7 @@ impl MigrationTrait for Migration {
                     )
                     .col(
                         ColumnDef::new(entity::object::Column::UploadTime)
-                            .timestamp()
+                            .timestamp_with_time_zone()
                             .not_null(),
                     )
                     .col(
