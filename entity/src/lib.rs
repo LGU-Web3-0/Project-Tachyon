@@ -6,3 +6,4 @@ pub mod task;
 pub mod team;
 pub mod team_member;
 pub mod user;
+pub mod task_discussion;
