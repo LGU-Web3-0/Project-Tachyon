@@ -1,1 +1,91 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
+<html>
+
+	<head> 
+		<% include!("../header.stpl"); %>
+	</head>
+
+
+	<body>
+		<main class="bg-gray-100 dark:bg-gray-800 rounded-2xl relative h-screen overflow-hidden relative">
+			<div class="flex items-start justify-between">
+				<% include!("task_leftbar.stpl"); %>
+				<div class="flex flex-col w-full pl-0 md:p-4 md:space-y-4">
+					<% include!("hbar.stpl"); %>
+					<div class="container relative left-0 z-50 flex w-2/4 h-auto h-full">
+						<div class="relative flex items-center w-full lg:w-128 h-full group space-x-4">
+							<div class="flex flex-col w-full shadow-lg rounded-2xl">
+								<input type="text"
+									   id="keywords"
+									   class="block w-full py-1.5 pl-10 pr-4 leading-normal rounded-2xl focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 ring-opacity-90 bg-gray-100 dark:bg-gray-800 text-gray-400 aa-input"
+									   placeholder="Search"/>
+							</div>
+							<div class="flex flex-col w-full shadow-lg rounded-2xl">
+								<input type="number"
+			                           id="pagesize" name="quantity" min="1" max="15"
+									   class="block w-full py-1.5 pl-10 pr-4 leading-normal rounded-2xl focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 ring-opacity-90 bg-gray-100 dark:bg-gray-800 text-gray-400 aa-input"
+		   value="10"/>
+							</div>
+						</div>
+					</div>
+					<div class="flex flex-col w-full shadow-lg rounded-2xl">
+						<div class="overflow-x-auto sm:-mx-6 lg:-mx-8">
+							<div class="py-2 inline-block min-w-full sm:px-6 lg:px-8">
+								<div class="overflow-x-auto">
+									<table class="min-w-full">
+										<thead class="border-b">
+											<tr>
+												<th scope="col" class="text-sm font-medium text-gray-900 px-6 py-4 text-left">
+													#
+												</th>
+												<th scope="col" class="text-sm font-medium text-gray-900 px-6 py-4 text-left">
+													Avatar
+												</th>
+												<th scope="col" class="text-sm font-medium text-gray-900 px-6 py-4 text-left">
+													Name
+												</th>
+											</tr>                                                                                                     
+										</thead>                              
+										<tbody>
+											<% for task in items.into_iter() { %>
+											<tr class="bg-white border-b">
+												<td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+													<%= task.id %>
+												</td>
+												<td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
+													<%= task.name %>
+												</td>
+												<td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
+													<button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full">
+														Edit
+													</button>
+												</td>
+											</tr>
+											<% } %>
+										</tbody>
+									</table>
+									<div class="p-4">
+										<% if let Some(url) = prev_page_url { %>
+										<a href="<%= url %>"
+			 class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full">
+			 Previous Page
+										</a>
+										<% } %>
+
+										<% if let Some(url) = next_page_url { %>
+										<a href="<%= url %>"
+			 class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full">
+			 Next Page
+										</a>
+										<% } %>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+			</div>
+		</main>
+	</body>
+</html>
