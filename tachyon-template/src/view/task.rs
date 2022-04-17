@@ -20,7 +20,6 @@ impl TaskItem {
             email_h,
             description,
         }
-        Self { id, name, email_h }
     }
 }
 
