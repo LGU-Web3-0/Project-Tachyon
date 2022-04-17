@@ -29,9 +29,9 @@ impl TaskTemplate {
         prev_page: Option<usize>,
         next_page: Option<usize>,
     ) -> Self {
-        let prev_page_url =
+        let mut prev_page_url =
             prev_page.map(|n| format!("/view/task?page_size={}&page_no={}", page_size, n));
-        let next_page_url =
+        let mut next_page_url =
             next_page.map(|n| format!("/view/task?page_size={}&page_no={}", page_size, n));
 
         Self {
