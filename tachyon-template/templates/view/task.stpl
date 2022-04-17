@@ -127,7 +127,10 @@
 												<label class="font-bold text-grey-darker block mb-2">Task Name</label>
 												<input id="task-name" type="text" class="block appearance-none w-full bg-white border border-grey-light hover:border-grey px-2 py-2 rounded shadow" placeholder="Your Task Name" />
 											</div>
-
+											<div class="mb-4">
+												<label class="font-bold text-grey-darker block mb-2">Due Time</label>
+												<input id="due-time" type="text" class="block appearance-none w-full bg-white border border-grey-light hover:border-grey px-2 py-2 rounded shadow" placeholder="Your Task Due Time" />
+											</div>
 											<div class="mb-4">
 												<label class="font-bold text-grey-darker block mb-2">Task Description</label>
 												<input id="task-description" type="text" class="block appearance-none w-full bg-white border border-grey-light hover:border-grey px-2 py-2 rounded shadow" placeholder="Your Task Description" />

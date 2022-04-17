@@ -6,6 +6,12 @@ export namespace Auth {
     }
 
 
+	export interface AddTaskResult {
+		success: boolean,
+		message?: string
+	}
+
+
 	export async function add_task_onclick() {
 		document.getElementById("add-task-modal").classList.remove("hidden")
 	}
@@ -14,7 +20,40 @@ export namespace Auth {
 		document.getElementById("add-task-modal").classList.add("hidden")
 	}
 
+	export async function really_add_task_onclick() {
+         const task_name = (document.getElementById("task-name") as HTMLInputElement).value     
+		 const create_time = new Date().toISOString();
+         const due_time = (document.getElementById("due-time") as HTMLInputElement).value     
+         const task_description = (document.getElementById("task-description") as HTMLInputElement).value   
+		 const result = await add_task(task_name, create_time, due_time, task_description)
+		 if (result.success) {
+			 document.getElementById("add-task-modal").classList.add("hidden")
+			 window.location.reload()
+		 }
+		 if (!result.success){
+			 document.getElementById("add-task-modal").classList.add("hidden")
+		 }
+	}	
 
+	async function add_task(task_name: string, create_time: string, due_time: string, task_description: string): Promise<AddTaskResult>{
+	     let request = {
+              name: task_name,
+			  create_date: create_time,
+			  due_date: due_time,
+			  description: task_description,
+		 };
+
+		 const response = await window.fetch("/api/task/add", {
+			 method: 'post',
+			 headers: {
+				 'content-type': 'application/json;charset=UTF-8',
+			 },
+			 body: JSON.stringify(request),
+		 });
+
+		 return await response.json()
+											
+	}
 
 
 
