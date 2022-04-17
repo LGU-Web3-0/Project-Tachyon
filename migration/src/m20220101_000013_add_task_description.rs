@@ -26,7 +26,7 @@ impl MigrationTrait for Migration {
         manager
             .alter_table(
                 sea_query::Table::alter()
-                    .table(entity::user::Entity)
+                    .table(entity::task::Entity)
                     .drop_column(entity::task::Column::Description)
                     .to_owned(),
             )

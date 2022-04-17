@@ -20,12 +20,10 @@ fn convert_task_info<I>(task: I, email: &str) -> Vec<tachyon_template::view::Tas
 where
     I: Iterator<Item = entity::task::Model>,
 {
-
     task.map(|t| {
         tachyon_template::view::TaskItem::new(t.id, email.to_owned(), t.name, t.description)
     })
     .collect()
-
 }
 
 #[derive(serde::Serialize, serde::Deserialize)]
