@@ -1,11 +1,11 @@
 use crate::session::UserInfo;
 use crate::State;
 use actix_session::Session;
-use actix_web::error::{ErrorInternalServerError, ErrorUnauthorized};
+use actix_web::error::{ErrorInternalServerError, ErrorUnauthorized, ErrorNotFound};
 use actix_web::web::Data;
 use actix_web::web::Path;
 use actix_web::{HttpResponse, Result};
-use entity::sea_orm::{EntityTrait, PaginatorTrait, QueryOrder};
+use entity::sea_orm::{EntityTrait, PaginatorTrait, QueryOrder, Statement, DbBackend};
 use sea_query::Order;
 use tachyon_template::view::{Comment, TaskDetailTemplate, UserData};
 use tachyon_template::{view::TaskTemplate, AsyncRenderOnce};
@@ -34,32 +34,84 @@ pub struct TaskDetailRequest {
 pub async fn detail(
     info: Path<TaskDetailRequest>,
     session: Session,
-    _state: Data<State>,
+    state: Data<State>,
 ) -> Result<HttpResponse> {
     let user = session
         .get::<UserInfo>("user")
         .map_err(ErrorInternalServerError)
         .and_then(|data| data.ok_or_else(|| ErrorUnauthorized("no login info")))?;
     let info = info.into_inner();
+    let task = entity::task::Entity::find_by_id(info.id)
+        .one(&state.sql_db)
+        .await
+        .map_err(ErrorInternalServerError)?
+        .ok_or_else(|| ErrorNotFound("no such task"))?;
+    let assigned_users = entity::user::Entity::find()
+        .from_raw_sql(
+            Statement::from_sql_and_values(
+                DbBackend::Postgres,
+                r#"SELECT * 
+                FROM "user" 
+                JOIN task_user_assignment ON task_user_assignment.task_id = $1
+                ORDER BY "user".id"#,
+                vec![info.id.into()],
+            )
+        )
+        .all(&state.sql_db)
+        .await
+        .map_err(ErrorInternalServerError)?
+        .into_iter()
+        .map(|u| UserData::new(u.name, u.email))
+        .collect();
+    let comment = entity::task_discussion::Entity::find()
+        .from_raw_sql(
+            Statement::from_sql_and_values(
+                DbBackend::Postgres,
+                r#"SELECT * 
+                FROM task_discussion 
+                WHERE task_discussion.task_id = $1
+                ORDER BY task_discussion.create_date DESC"#,
+                vec![info.id.into()],
+            )
+        )
+        .all(&state.sql_db)
+        .await
+        .map_err(ErrorInternalServerError)?;
+
+    let mut comment_and_user = Vec::new();
+    for i in comment.into_iter() {
+        if let Some(user) = entity::user::Entity::find_by_id(i.user_id)
+            .one(&state.sql_db)
+            .await
+            .map_err(ErrorInternalServerError)? {
+                let real_comment = Comment::new(
+                    i.id,
+                    i.content,
+                    i.update_time,
+                    UserData::new(user.name, user.email)
+                );
+                comment_and_user.push(real_comment);
+        }
+    }
     let template = TaskDetailTemplate::new(
-        "Task | Project Tachyon",
-            user.email,
-            info.id,
-            "Test",
-            chrono::Utc::now(),
-            Some(chrono::Utc::now()),
-            vec![
-                UserData::new("123", "a@b.com"),
-                UserData::new("Schrodinger ZHU Yifan", "i@zhuyi.fan")
-            ],
-            vec![
-                Comment::new(0, "hello, world", chrono::Utc::now(),UserData::new("Schrodinger ZHU Yifan", "i@zhuyi.fan")),
-                Comment::new(1, "- A \n - B \n - C ```123```", chrono::Utc::now(),UserData::new("Schrodinger ZHU Yifan", "i@zhuyi.fan")),
-                Comment::new(3, "- A \n - B \n - C ```123```", chrono::Utc::now(),UserData::new("123", "a@b.com")),
-            ],
-        "
-The Chinese University of Hong Kong, Shenzhen （CUHK-Shenzhen）was founded in accordance with the Regulations of the People’s Republic of China on Chinese-foreign Cooperation in Running Schools upon approval by the Ministry of Education. The University is committed to providing top-quality higher education that features an integration of the East and the West and fostering an enriching research environment. It is CUHK-Shenzhen’s mission to cultivate innovative talents with a global perspective, Chinese cultural traditions and social responsibilities.
-",
+        // title string
+        "Task Detail | Project Tachyon",
+        // email string
+        user.email.clone(),
+        // task_id i64
+        info.id,
+        // name string
+        task.name,
+        // create_at datetime
+        task.create_date,
+        // finished_at datetime
+        task.finish_date,
+        // assigned_users vec<userdata>
+        assigned_users,
+        // comments vec<comment>
+        comment_and_user,
+        // description string
+        "",
     );
     template.render_response().await
 }
