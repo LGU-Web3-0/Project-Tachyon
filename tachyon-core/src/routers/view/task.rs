@@ -1,12 +1,11 @@
-use crate::routers::api::user::WRONG_PASS_ATTEMPT_THRESHOLD;
 use crate::session::UserInfo;
 use crate::State;
 use actix_session::Session;
 use actix_web::error::{ErrorInternalServerError, ErrorUnauthorized};
 use actix_web::web::Data;
 use actix_web::{HttpResponse, Result};
-use entity::sea_orm::{EntityTrait, PaginatorTrait, QueryFilter, QueryOrder};
-use sea_query::{Expr, Order};
+use entity::sea_orm::{EntityTrait, PaginatorTrait, QueryOrder};
+use sea_query::Order;
 use tachyon_template::{view::TaskTemplate, AsyncRenderOnce};
 
 #[derive(serde::Serialize, serde::Deserialize)]
@@ -30,7 +29,7 @@ pub async fn handler(
 ) -> Result<HttpResponse> {
     match session.get::<UserInfo>("user")? {
         None => Err(ErrorUnauthorized("login info not found")),
-        Some(user) => {
+        Some(_user) => {
             let page = entity::task::Entity::find();
             let page_size = request.page_size.unwrap_or(10);
             let paginator = page
