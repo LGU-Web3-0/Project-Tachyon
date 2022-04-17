@@ -7,12 +7,18 @@ pub struct TaskItem {
     pub id: i64,
     pub name: String,
     pub email_h: String,
+    pub description: String,
 }
 
 impl TaskItem {
-    pub fn new(id: i64, email: String, name: String) -> Self {
+    pub fn new(id: i64, email: String, name: String, description: String) -> Self {
         let email_h = email_hash(&email);
-        Self { id, name, email_h }
+        Self {
+            id,
+            name,
+            email_h,
+            description,
+        }
     }
 }
 
