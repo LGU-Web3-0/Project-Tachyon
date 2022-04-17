@@ -16,11 +16,11 @@ pub struct TaskRequest {
     page_size: Option<usize>,
 }
 
-fn convert_task_info<I>(task: I, email: &String) -> Vec<tachyon_template::view::TaskItem>
+fn convert_task_info<I>(task: I, email: &str) -> Vec<tachyon_template::view::TaskItem>
 where
     I: Iterator<Item = entity::task::Model>,
 {
-    task.map(|t| tachyon_template::view::TaskItem::new(t.id, email.clone(), t.name))
+    task.map(|t| tachyon_template::view::TaskItem::new(t.id, email.to_string(), t.name))
         .collect()
 }
 
