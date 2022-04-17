@@ -26,27 +26,23 @@ impl MigrationTrait for Migration {
                     .col(
                         ColumnDef::new(entity::task_discussion::Column::TaskId)
                             .big_integer()
-                            .not_null()
-                            .indexed(),
+                            .not_null(),
                     )
                     .col(
                         ColumnDef::new(entity::task_discussion::Column::UpdateTime)
-                            .date_time_utc()
-                            .not_null()
-                            .indexed(),
+                            .timestamp_with_time_zone()
+                            .not_null(),
                     )
                     .col(
                         ColumnDef::new(entity::task_discussion::Column::UserId)
                             .big_integer()
-                            .not_null()
-                            .indexed(),
+                            .not_null(),
                     )
                     .col(
                         ColumnDef::new(entity::task_discussion::Column::Content)
-                            .text()
-                            .not_null()
-                            .indexed(),
-                    ),
+                            .string()
+                            .not_null(),
+                    )
                     .foreign_key(
                         ForeignKey::create()
                             .name("fk-task_id-taskId")
@@ -55,6 +51,17 @@ impl MigrationTrait for Migration {
                                 entity::task_discussion::Column::TaskId,
                             )
                             .to(entity::task::Entity, entity::task::Column::Id)
+                            .on_delete(ForeignKeyAction::Cascade)
+                            .on_update(ForeignKeyAction::Cascade),
+                    )
+                    .foreign_key(
+                        ForeignKey::create()
+                            .name("fk-user_id-userId")
+                            .from(
+                                entity::task_discussion::Entity,
+                                entity::task_discussion::Column::UserId,
+                            )
+                            .to(entity::user::Entity, entity::user::Column::Id)
                             .on_delete(ForeignKeyAction::Cascade)
                             .on_update(ForeignKeyAction::Cascade),
                     )

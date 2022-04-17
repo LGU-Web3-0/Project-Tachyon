@@ -48,10 +48,10 @@ impl ColumnTrait for Column {
     fn def(&self) -> ColumnDef {
         match self {
             Self::Id => ColumnType::BigInteger.def().unique().indexed(),
-            Self::TaskId => ColumnType::BigInteger.def().indexed(),
-            Self::UpdateTime => ColumnType::DateTimeUtc.def().indexed(),
-            Self::UserId => ColumnType::BigInteger.def().indexed(),
-            Self::Content => ColumnType::Text.def().indexed(),
+            Self::TaskId => ColumnType::BigInteger.def(),
+            Self::UpdateTime => ColumnType::TimestampWithTimeZone.def(),
+            Self::UserId => ColumnType::BigInteger.def(),
+            Self::Content => ColumnType::String(None).def(),
         }
     }
 }
