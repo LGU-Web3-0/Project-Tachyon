@@ -13,6 +13,8 @@ mod m20220101_000007_create_team_member_table;
 mod m20220101_000008_create_category_table;
 mod m20220101_000009_create_project_table;
 mod m20220101_000010_create_task_discussion_table;
+mod m20220101_000011_create_task_user_assignment_table;
+mod m20220101_000012_create_task_discussion_attachment_table;
 
 pub struct Migrator;
 
@@ -30,6 +32,8 @@ impl MigratorTrait for Migrator {
             box m20220101_000008_create_category_table::Migration,
             box m20220101_000009_create_project_table::Migration,
             box m20220101_000010_create_task_discussion_table::Migration,
+            box m20220101_000011_create_task_user_assignment_table::Migration,
+            box m20220101_000012_create_task_discussion_attachment_table::Migration,
         ]
     }
 }

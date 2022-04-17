@@ -4,6 +4,8 @@ pub mod object;
 pub mod project;
 pub mod task;
 pub mod task_discussion;
+pub mod task_discussion_attachment;
+pub mod task_user_assignment;
 pub mod team;
 pub mod team_member;
 pub mod user;
