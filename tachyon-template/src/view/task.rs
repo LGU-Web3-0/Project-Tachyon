@@ -41,10 +41,14 @@ impl TaskTemplate {
         prev_page: Option<usize>,
         next_page: Option<usize>,
     ) -> Self {
+<<<<<<< HEAD
         let email_hash = email_hash(email);
         let prev_page_url =
+=======
+        let mut prev_page_url =
+>>>>>>> 18dbd10 (feat: add UI for task board)
             prev_page.map(|n| format!("/view/task?page_size={}&page_no={}", page_size, n));
-        let next_page_url =
+        let mut next_page_url =
             next_page.map(|n| format!("/view/task?page_size={}&page_no={}", page_size, n));
 
         Self {
