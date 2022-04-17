@@ -1,11 +1,11 @@
 use crate::session::UserInfo;
 use crate::State;
 use actix_session::Session;
-use actix_web::error::{ErrorInternalServerError, ErrorUnauthorized, ErrorNotFound};
+use actix_web::error::{ErrorInternalServerError, ErrorNotFound, ErrorUnauthorized};
 use actix_web::web::Data;
 use actix_web::web::Path;
 use actix_web::{HttpResponse, Result};
-use entity::sea_orm::{EntityTrait, PaginatorTrait, QueryOrder, Statement, DbBackend};
+use entity::sea_orm::{DbBackend, EntityTrait, PaginatorTrait, QueryOrder, Statement};
 use sea_query::Order;
 use tachyon_template::view::{Comment, TaskDetailTemplate, UserData};
 use tachyon_template::{view::TaskTemplate, AsyncRenderOnce};
@@ -47,16 +47,14 @@ pub async fn detail(
         .map_err(ErrorInternalServerError)?
         .ok_or_else(|| ErrorNotFound("no such task"))?;
     let assigned_users = entity::user::Entity::find()
-        .from_raw_sql(
-            Statement::from_sql_and_values(
-                DbBackend::Postgres,
-                r#"SELECT * 
+        .from_raw_sql(Statement::from_sql_and_values(
+            DbBackend::Postgres,
+            r#"SELECT * 
                 FROM "user" 
                 JOIN task_user_assignment ON task_user_assignment.task_id = $1
                 ORDER BY "user".id"#,
-                vec![info.id.into()],
-            )
-        )
+            vec![info.id.into()],
+        ))
         .all(&state.sql_db)
         .await
         .map_err(ErrorInternalServerError)?
@@ -64,16 +62,14 @@ pub async fn detail(
         .map(|u| UserData::new(u.name, u.email))
         .collect();
     let comment = entity::task_discussion::Entity::find()
-        .from_raw_sql(
-            Statement::from_sql_and_values(
-                DbBackend::Postgres,
-                r#"SELECT * 
+        .from_raw_sql(Statement::from_sql_and_values(
+            DbBackend::Postgres,
+            r#"SELECT * 
                 FROM task_discussion 
                 WHERE task_discussion.task_id = $1
                 ORDER BY task_discussion.create_date DESC"#,
-                vec![info.id.into()],
-            )
-        )
+            vec![info.id.into()],
+        ))
         .all(&state.sql_db)
         .await
         .map_err(ErrorInternalServerError)?;
@@ -83,14 +79,15 @@ pub async fn detail(
         if let Some(user) = entity::user::Entity::find_by_id(i.user_id)
             .one(&state.sql_db)
             .await
-            .map_err(ErrorInternalServerError)? {
-                let real_comment = Comment::new(
-                    i.id,
-                    i.content,
-                    i.update_time,
-                    UserData::new(user.name, user.email)
-                );
-                comment_and_user.push(real_comment);
+            .map_err(ErrorInternalServerError)?
+        {
+            let real_comment = Comment::new(
+                i.id,
+                i.content,
+                i.update_time,
+                UserData::new(user.name, user.email),
+            );
+            comment_and_user.push(real_comment);
         }
     }
     let template = TaskDetailTemplate::new(
