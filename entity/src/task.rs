@@ -18,6 +18,7 @@ pub struct Model {
     pub create_date: DateTimeUtc,
     pub due_date: DateTimeUtc,
     pub finish_date: Option<DateTimeUtc>,
+    pub description: String,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveColumn)]
@@ -27,6 +28,7 @@ pub enum Column {
     CreateDate,
     DueDate,
     FinishDate,
+    Description,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DerivePrimaryKey)]
@@ -53,6 +55,7 @@ impl ColumnTrait for Column {
             Self::CreateDate => ColumnType::TimestampWithTimeZone.def(),
             Self::DueDate => ColumnType::TimestampWithTimeZone.def(),
             Self::FinishDate => ColumnType::TimestampWithTimeZone.def(),
+            Self::Description => ColumnType::String(None).def(),
         }
     }
 }
@@ -66,13 +69,15 @@ impl RelationTrait for Relation {
 impl ActiveModelBehavior for ActiveModel {}
 
 impl Model {
-    pub fn prepare<S0>(
+    pub fn prepare<S0, S1>(
         name: S0,
         create_date: &DateTimeUtc,
         due_date: &DateTimeUtc,
+        description: S1,
     ) -> anyhow::Result<ActiveModel>
     where
         S0: AsRef<str>,
+        S1: AsRef<str>,
     {
         Ok(ActiveModel {
             id: ActiveValue::NotSet,
@@ -80,6 +85,7 @@ impl Model {
             create_date: ActiveValue::Set(*create_date),
             due_date: ActiveValue::Set(*due_date),
             finish_date: ActiveValue::NotSet,
+            description: ActiveValue::Set(description.as_ref().to_owned()),
         })
     }
 }
