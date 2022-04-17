@@ -1,5 +1,5 @@
 use crate::session::UserInfo;
-use crate::{State, StatusCode};
+use crate::{IntoAnyhow, State, StatusCode};
 use actix_multipart::Multipart;
 use actix_session::Session;
 use actix_web::error::ErrorInternalServerError;
@@ -26,6 +26,8 @@ struct ObjectData {
     inner: Option<IVec>,
 }
 
+const CHUNK_SIZE: usize = 1024 * 1024;
+
 impl futures::Stream for ObjectData {
     type Item = Result<Bytes>;
 
@@ -36,7 +38,13 @@ impl futures::Stream for ObjectData {
         }
         unsafe {
             let length = this.inner.as_ref().unwrap_unchecked().len();
-            match this.inner.as_ref().unwrap_unchecked().chunks(512).next() {
+            match this
+                .inner
+                .as_ref()
+                .unwrap_unchecked()
+                .chunks(CHUNK_SIZE)
+                .next()
+            {
                 None => Poll::Ready(None),
                 Some(x) => {
                     let result = Poll::Ready(Some(Ok(Bytes::copy_from_slice(x))));
@@ -184,6 +192,7 @@ pub async fn upload(
 pub struct VisibilityChange {
     pub uuid: Uuid,
 }
+
 pub async fn change_visibility(
     info: web::Json<VisibilityChange>,
     data: web::Data<State>,
@@ -223,6 +232,7 @@ pub async fn change_visibility(
 pub struct DeleteRequest {
     pub uuid: Uuid,
 }
+
 pub async fn delete(
     info: web::Json<DeleteRequest>,
     data: web::Data<State>,
@@ -242,7 +252,14 @@ pub async fn delete(
                 format!(r#"DELETE FROM object WHERE uuid = '{}'"#, info.uuid),
             ))
             .await
-        {
+            .anyhow()
+            .and_then(|x| {
+                if x.rows_affected() != 0 {
+                    data.kv_db.remove(info.uuid.as_bytes()).anyhow().and(Ok(()))
+                } else {
+                    Ok(())
+                }
+            }) {
             Ok(_) => HttpResponse::Ok().json(ObjectResult {
                 success: true,
                 message: None,
