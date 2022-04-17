@@ -43,7 +43,7 @@ pub enum PrimaryKey {
 }
 
 impl PrimaryKeyTrait for PrimaryKey {
-    type ValueType = Uuid;
+    type ValueType = i64;
     fn auto_increment() -> bool {
         true
     }
