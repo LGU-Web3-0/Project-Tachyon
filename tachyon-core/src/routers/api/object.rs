@@ -6,8 +6,9 @@ use actix_web::error::ErrorInternalServerError;
 use actix_web::http::header::{ContentDisposition, ContentType, DispositionParam, DispositionType};
 use actix_web::web::Bytes;
 use actix_web::{error, web, HttpResponse, Result};
-use entity::sea_orm::ActiveModelTrait;
+use entity::sea_orm::DatabaseBackend::Postgres;
 use entity::sea_orm::QueryFilter;
+use entity::sea_orm::{ActiveModelTrait, ConnectionTrait, Statement};
 use entity::sea_orm::{ActiveValue, ColumnTrait, EntityTrait};
 use futures::{StreamExt, TryFutureExt};
 use sled::IVec;
@@ -57,7 +58,7 @@ impl futures::Stream for ObjectData {
 }
 
 #[derive(serde::Deserialize, serde::Serialize, Debug)]
-struct UploadResult {
+struct ObjectResult {
     success: bool,
     message: Option<String>,
 }
@@ -142,7 +143,7 @@ pub async fn upload(
         Ok(model)
     }
     match session.get::<UserInfo>("user")? {
-        None => simd_json::to_string(&UploadResult {
+        None => simd_json::to_string(&ObjectResult {
             success: false,
             message: Some("unauthorized".to_string()),
         })
@@ -151,7 +152,7 @@ pub async fn upload(
             HttpResponse::Ok()
                 .content_type("application/json")
                 .status(StatusCode::UNAUTHORIZED)
-                .json(UploadResult {
+                .json(ObjectResult {
                     success: false,
                     message: Some(x),
                 })
@@ -163,7 +164,7 @@ pub async fn upload(
             .map(|_| {
                 HttpResponse::Created()
                     .content_type("application/json")
-                    .json(UploadResult {
+                    .json(ObjectResult {
                         success: true,
                         message: None,
                     })
@@ -171,7 +172,7 @@ pub async fn upload(
             .unwrap_or_else(|e| {
                 HttpResponse::BadRequest()
                     .content_type("application/json")
-                    .json(UploadResult {
+                    .json(ObjectResult {
                         success: false,
                         message: Some(e.to_string()),
                     })
@@ -179,11 +180,85 @@ pub async fn upload(
     }
 }
 
+#[derive(serde::Deserialize, serde::Serialize)]
+pub struct VisibilityChange {
+    pub uuid: Uuid,
+}
+pub async fn change_visibility(
+    info: web::Json<VisibilityChange>,
+    data: web::Data<State>,
+    session: Session,
+) -> Result<HttpResponse> {
+    if session.get::<UserInfo>("user")?.is_none() {
+        return Ok(HttpResponse::Unauthorized().json(ObjectResult {
+            success: false,
+            message: Some("unauthorized".to_string()),
+        }));
+    }
+    Ok(
+        match data
+            .sql_db
+            .execute(Statement::from_string(
+                Postgres,
+                format!(
+                    r#"UPDATE object SET visibility = NOT visibility WHERE uuid = '{}'"#,
+                    info.uuid
+                ),
+            ))
+            .await
+        {
+            Ok(_) => HttpResponse::Ok().json(ObjectResult {
+                success: true,
+                message: None,
+            }),
+            Err(e) => HttpResponse::BadRequest().json(ObjectResult {
+                success: false,
+                message: Some(e.to_string()),
+            }),
+        },
+    )
+}
+
+#[derive(serde::Deserialize, serde::Serialize)]
+pub struct DeleteRequest {
+    pub uuid: Uuid,
+}
+pub async fn delete(
+    info: web::Json<DeleteRequest>,
+    data: web::Data<State>,
+    session: Session,
+) -> Result<HttpResponse> {
+    if session.get::<UserInfo>("user")?.is_none() {
+        return Ok(HttpResponse::Unauthorized().json(ObjectResult {
+            success: false,
+            message: Some("unauthorized".to_string()),
+        }));
+    }
+    Ok(
+        match data
+            .sql_db
+            .execute(Statement::from_string(
+                Postgres,
+                format!(r#"DELETE FROM object WHERE uuid = '{}'"#, info.uuid),
+            ))
+            .await
+        {
+            Ok(_) => HttpResponse::Ok().json(ObjectResult {
+                success: true,
+                message: None,
+            }),
+            Err(e) => HttpResponse::BadRequest().json(ObjectResult {
+                success: false,
+                message: Some(e.to_string()),
+            }),
+        },
+    )
+}
+
 pub async fn get_handler(
     info: web::Query<ObjectRequest>,
     data: web::Data<State>,
 ) -> Result<HttpResponse> {
-    // TODO: auth
     let metadata: entity::object::Model = if let Some(uuid) = info.uuid {
         entity::object::Entity::find_by_id(uuid)
             .one(&data.sql_db)

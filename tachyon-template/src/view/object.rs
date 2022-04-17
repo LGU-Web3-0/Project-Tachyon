@@ -37,7 +37,7 @@ impl ObjectTemplate {
             objects,
             page_number,
             next_page_number,
-            prev_page_number
+            prev_page_number,
         }
     }
 }

@@ -96,6 +96,40 @@ export namespace Obj {
         }
         request.send(data)
     }
+
+    export async function change_visibility_onclick(uuid: String) {
+        const request = {
+            uuid
+        };
+        const response = await window.fetch("/api/object/visibility", {
+            method: 'post',
+            headers: {
+                'content-type': 'application/json;charset=UTF-8',
+            },
+            body: JSON.stringify(request),
+        });
+        const json = await response.json();
+        if (json.success) {
+            window.location.reload();
+        }
+    }
+
+    export async function delete_onclick(uuid: String) {
+        const request = {
+            uuid
+        };
+        const response = await window.fetch("/api/object/delete", {
+            method: 'post',
+            headers: {
+                'content-type': 'application/json;charset=UTF-8',
+            },
+            body: JSON.stringify(request),
+        });
+        const json = await response.json();
+        if (json.success) {
+            window.location.reload();
+        }
+    }
 }
 
 export function test() {
