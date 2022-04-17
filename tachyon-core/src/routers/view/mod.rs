@@ -12,5 +12,6 @@ pub fn routers() -> Scope {
         .route("/dashboard", web::get().to(dashboard::handler))
         .route("/user", web::get().to(user::handler))
         .route("/object", web::get().to(object::handler))
+        .route("/task/{id}/detail", web::get().to(task::detail))
         .route("/task", web::get().to(task::handler))
 }
