@@ -11,6 +11,7 @@ actix-web = { version = "4.0" }
 md-5 = "0.10.1"
 log = "0.4"
 urlencoding = "2"
-
+chrono = "0.4"
+uuid = { version = "0.8", default-features = false}
 [dev-dependencies]
 tokio = { version = "1.17.0", features = ["full"] }

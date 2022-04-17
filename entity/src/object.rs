@@ -50,7 +50,7 @@ impl ColumnTrait for Column {
             Self::Uuid => ColumnType::Uuid.def().unique().indexed(),
             Self::Name => ColumnType::String(None).def().unique().indexed(),
             Self::Mimetype => ColumnType::String(None).def(),
-            Self::UploadTime => ColumnType::Timestamp.def(),
+            Self::UploadTime => ColumnType::TimestampWithTimeZone.def(),
             Self::Visibility => ColumnType::Boolean.def(),
         }
     }
