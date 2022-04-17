@@ -3,9 +3,11 @@ use crate::State;
 use actix_session::Session;
 use actix_web::error::{ErrorInternalServerError, ErrorUnauthorized};
 use actix_web::web::Data;
+use actix_web::web::Path;
 use actix_web::{HttpResponse, Result};
 use entity::sea_orm::{EntityTrait, PaginatorTrait, QueryOrder};
 use sea_query::Order;
+use tachyon_template::view::{Comment, TaskDetailTemplate, UserData};
 use tachyon_template::{view::TaskTemplate, AsyncRenderOnce};
 
 #[derive(serde::Serialize, serde::Deserialize)]
@@ -20,6 +22,44 @@ where
 {
     task.map(|t| tachyon_template::view::TaskItem::new(t.id, email.clone(), t.name))
         .collect()
+}
+
+#[derive(serde::Serialize, serde::Deserialize)]
+pub struct TaskDetailRequest {
+    id: i64,
+}
+
+pub async fn detail(
+    info: Path<TaskDetailRequest>,
+    session: Session,
+    _state: Data<State>,
+) -> Result<HttpResponse> {
+    let user = session
+        .get::<UserInfo>("user")
+        .map_err(ErrorInternalServerError)
+        .and_then(|data| data.ok_or_else(|| ErrorUnauthorized("no login info")))?;
+    let info = info.into_inner();
+    let template = TaskDetailTemplate::new(
+        "Task | Project Tachyon",
+            user.email,
+            info.id,
+            "Test",
+            chrono::Utc::now(),
+            Some(chrono::Utc::now()),
+            vec![
+                UserData::new("123", "a@b.com"),
+                UserData::new("Schrodinger ZHU Yifan", "i@zhuyi.fan")
+            ],
+            vec![
+                Comment::new(0, "hello, world", chrono::Utc::now(),UserData::new("Schrodinger ZHU Yifan", "i@zhuyi.fan")),
+                Comment::new(1, "- A \n - B \n - C ```123```", chrono::Utc::now(),UserData::new("Schrodinger ZHU Yifan", "i@zhuyi.fan")),
+                Comment::new(3, "- A \n - B \n - C ```123```", chrono::Utc::now(),UserData::new("123", "a@b.com")),
+            ],
+        "
+The Chinese University of Hong Kong, Shenzhen （CUHK-Shenzhen）was founded in accordance with the Regulations of the People’s Republic of China on Chinese-foreign Cooperation in Running Schools upon approval by the Ministry of Education. The University is committed to providing top-quality higher education that features an integration of the East and the West and fostering an enriching research environment. It is CUHK-Shenzhen’s mission to cultivate innovative talents with a global perspective, Chinese cultural traditions and social responsibilities.
+",
+    );
+    template.render_response().await
 }
 
 pub async fn handler(

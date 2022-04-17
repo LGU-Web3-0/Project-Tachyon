@@ -13,5 +13,7 @@ log = "0.4"
 urlencoding = "2"
 chrono = "0.4"
 uuid = { version = "0.8", default-features = false}
+ammonia = "3.2.0"
+pulldown-cmark = "0.9.1"
 [dev-dependencies]
 tokio = { version = "1.17.0", features = ["full"] }
