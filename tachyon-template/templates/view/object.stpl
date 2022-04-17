@@ -48,6 +48,93 @@
                     </button>
                 </div>
             </div>
+
+            <div class="flex flex-col w-full shadow-lg rounded-2xl">
+                <div class="overflow-x-auto sm:-mx-6 lg:-mx-8">
+                    <div class="py-2 inline-block min-w-full sm:px-6 lg:px-8">
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full">
+                                <thead class="border-b">
+                                <tr>
+                                    <th scope="col" class="text-sm font-medium text-gray-900 px-6 py-4 text-left">
+                                        Name
+                                    </th>
+                                    <th scope="col" class="text-sm font-medium text-gray-900 px-6 py-4 text-left">
+                                        Uuid
+                                    </th>
+                                    <th scope="col" class="text-sm font-medium text-gray-900 px-6 py-4 text-left">
+                                        Upload Date
+                                    </th>
+                                    <th scope="col" class="text-sm font-medium text-gray-900 px-6 py-4 text-left">
+                                        Mimetype
+                                    </th>
+                                    <th scope="col" class="text-sm font-medium text-gray-900 px-6 py-4 text-left">
+                                        Visibility
+                                    </th>
+                                    <th scope="col" class="text-sm font-medium text-gray-900 px-6 py-4 text-left">
+                                        Download
+                                    </th>
+                                    <th scope="col" class="text-sm font-medium text-gray-900 px-6 py-4 text-left">
+                                        Management
+                                    </th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <% for obj in objects.into_iter() { %>
+                                <tr class="bg-white border-b">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                        <%= obj.name %>
+                                    </td>
+                                    <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
+                                        <%= format!("{}", obj.uuid) %>
+                                    </td>
+                                    <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
+                                        <%= obj.uploaded_at.to_string() %>
+                                    </td>
+                                    <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
+                                        <%= obj.mimetype %>
+                                    </td>
+                                    <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
+                                        <%= obj.visibility %>
+                                    </td>
+                                    <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
+                                        <a href="/api/object/get?uuid=<%= format!("{}", obj.uuid) %>" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full">
+                                            Download
+                                        </a>
+                                    </td>
+                                    <td class="text-sm flex-row text-gray-900 font-light px-6 py-4 whitespace-nowrap">
+                                        <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full">
+                                            Change Visibility
+                                        </button>
+                                        <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-full">
+                                            Delete
+                                        </button>
+                                    </td>
+                                </tr>
+                                <% } %>
+                                </tbody>
+                            </table>
+                            <div class="p-4 flex flex-row">
+                                <% if let Some(num) = prev_page_number { %>
+                                <a href="/view/object?page=<%= num %>"
+                                   class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full">
+                                    Previous Page
+                                </a>
+                                <% } %>
+                                <p class="bg-blue-500 text-white font-bold py-2 px-4 rounded-full">
+                                   <%= page_number %>
+                                </p>
+                                <% if let Some(num) = next_page_number  { %>
+                                <a href="/view/object?page=<%= num %>"
+                                   class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full">
+                                    Next Page
+                                </a>
+                                <% } %>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </main>
