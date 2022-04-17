@@ -5,6 +5,15 @@ export namespace Auth {
         signature_requirement?: string
     }
 
+
+	export async function add_task_onclick() {
+		document.getElementById("add-task-modal").classList.remove("hidden")
+	}
+
+
+
+
+
     export async function login_onclick() {
         const email = (document.getElementById("email") as HTMLInputElement).value
         const password = (document.getElementById("password") as HTMLInputElement).value
