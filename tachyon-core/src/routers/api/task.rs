@@ -1,15 +1,21 @@
 use crate::session::UserInfo;
 use crate::State;
 use actix_session::Session;
-use actix_web::error::ErrorInternalServerError;
+use actix_web::error::{ErrorBadRequest, ErrorInternalServerError, ErrorNotFound};
 use actix_web::web::Json;
 use actix_web::{http, web, HttpResponse, Result};
 use entity::sea_orm::entity::prelude::*;
-use entity::sea_orm::{ActiveModelTrait, DatabaseConnection};
+use entity::sea_orm::{ActiveModelTrait, ActiveValue, DatabaseConnection};
 use validator::Validate;
 
 #[derive(serde::Serialize, serde::Deserialize, Debug)]
 pub struct AddTaskResult {
+    success: bool,
+    message: Option<String>,
+}
+
+#[derive(serde::Serialize, serde::Deserialize, Debug)]
+pub struct EditTaskResult {
     success: bool,
     message: Option<String>,
 }
@@ -21,6 +27,12 @@ pub struct AddTaskRequest {
     create_date: DateTimeUtc,
     due_date: DateTimeUtc,
     description: String,
+}
+
+#[derive(PartialEq, serde::Serialize, serde::Deserialize, Debug, Validate)]
+pub struct EditTaskRequest {
+    id: i64,
+    updated_description: String,
 }
 
 pub async fn add_task(
@@ -92,6 +104,70 @@ pub async fn add_task(
             }
         }
     };
+    simd_json::to_string(&json)
+        .map_err(ErrorInternalServerError)
+        .map(|x| {
+            HttpResponse::Ok()
+                .content_type("application/json")
+                .status(status)
+                .body(x)
+        })
+}
+
+pub async fn edit_task(
+    request: Json<EditTaskRequest>,
+    session: Session,
+    data: web::Data<State>,
+) -> Result<HttpResponse> {
+    let mut status = http::StatusCode::OK;
+    let json = match session.get::<UserInfo>("user") {
+        Err(e) => {
+            status = http::StatusCode::INTERNAL_SERVER_ERROR;
+            EditTaskResult {
+                success: false,
+                message: Some(format!("{}", e)),
+            }
+        }
+        Ok(Some(user)) if user.perms.task_management => {
+            let task = entity::task::Entity::find_by_id(request.id)
+                .one(&data.sql_db)
+                .await
+                .map_err(ErrorBadRequest)?
+                .ok_or_else(|| ErrorNotFound("no such task"))?;
+
+            let mut active_task: entity::task::ActiveModel = task.into();
+            let upd_des: String = request.updated_description.clone();
+            active_task.description = ActiveValue::Set(upd_des);
+            match active_task
+                .update(&data.sql_db)
+                .await
+                .map_err(ErrorInternalServerError)
+            {
+                Ok(_) => EditTaskResult {
+                    success: true,
+                    message: None,
+                },
+                Err(e) => EditTaskResult {
+                    success: false,
+                    message: Some(format!("{}", e)),
+                },
+            };
+
+            EditTaskResult {
+                success: true,
+                message: None,
+            }
+        }
+
+        Ok(_) => {
+            status = http::StatusCode::UNAUTHORIZED;
+            EditTaskResult {
+                success: false,
+                message: Some("unauthorized".to_string()),
+            }
+        }
+    };
+
     simd_json::to_string(&json)
         .map_err(ErrorInternalServerError)
         .map(|x| {

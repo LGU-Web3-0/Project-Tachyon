@@ -25,4 +25,5 @@ pub fn routers() -> Scope {
         .route("/user/delete", web::delete().to(user::delete))
         .route("/user/edit", web::post().to(user::edit))
         .route("/task/add", web::post().to(task::add_task))
+        .route("/task/edit", web::post().to(task::edit_task))
 }
