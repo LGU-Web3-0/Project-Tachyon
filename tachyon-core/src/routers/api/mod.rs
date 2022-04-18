@@ -23,5 +23,6 @@ pub fn routers() -> Scope {
         .route("/user/lock", web::post().to(user::lock))
         .route("/user/unlock", web::post().to(user::unlock))
         .route("/user/delete", web::delete().to(user::delete))
+        .route("/user/edit", web::post().to(user::edit))
         .route("/task/add", web::post().to(task::add_task))
 }

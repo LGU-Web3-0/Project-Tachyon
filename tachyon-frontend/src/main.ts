@@ -75,8 +75,13 @@ export namespace UserView {
     export async function user_modal_cancel() {
         document.getElementById("add-user-modal").classList.add("hidden");
     }
-    async function show_error_message(msg: string) {
+    async function show_add_error(msg: string) {
         const message = document.getElementById("error-message");
+        message.classList.remove("hidden");
+        message.textContent = msg;
+    }
+    async function show_edit_error(msg: string) {
+        const message = document.getElementById("user-edit-error");
         message.classList.remove("hidden");
         message.textContent = msg;
     }
@@ -84,7 +89,7 @@ export namespace UserView {
         const password = (document.getElementById("user-password") as HTMLInputElement).value;
         const confirmation = (document.getElementById("user-password-confirmation") as HTMLInputElement).value;
         if (password !== confirmation) {
-            return await show_error_message("Passwords do not match");
+            return await show_add_error("Passwords do not match");
         }
         const name = (document.getElementById("user-name") as HTMLInputElement).value;
         const email = (document.getElementById("user-email") as HTMLInputElement).value;
@@ -107,7 +112,7 @@ export namespace UserView {
             return document.location.reload();
         }
         if (result.message) {
-            return await show_error_message(result.message);
+            return await show_add_error(result.message);
         }
     }
     export async function user_lock(id: number) {
@@ -134,6 +139,10 @@ export namespace UserView {
             return document.location.reload();
         }
     }
+    export async function user_edit_trigger(id: number) {
+        (document.getElementById("user-edit-id") as HTMLInputElement).value = id.toString();
+        document.getElementById("edit-user-modal").classList.remove("hidden");
+    }
     export async function user_delete_trigger(id: number, name: string, email: string, fingerprint: string) {
         (document.getElementById("user-del-id") as HTMLInputElement).value = id.toString();
         (document.getElementById("user-del-name") as HTMLInputElement).value = name;
@@ -143,6 +152,9 @@ export namespace UserView {
     }
     export async function user_delete_cancel() {
         document.getElementById("delete-user-modal").classList.add("hidden");
+    }
+    export async function user_edit_cancel() {
+        document.getElementById("edit-user-modal").classList.add("hidden");
     }
     export async function user_delete() {
         const id = (document.getElementById("user-del-id") as HTMLInputElement).value;
@@ -158,6 +170,38 @@ export namespace UserView {
         });
         if (response.status == 200) {
             return window.location.reload();
+        }
+    }
+    export async function user_edit() {
+        const password = (document.getElementById("user-edit-password") as HTMLInputElement);
+        const confirmation = (document.getElementById("user-edit-password-confirmation") as HTMLInputElement);
+        const name = (document.getElementById("user-edit-name") as HTMLInputElement);
+        const email = (document.getElementById("user-edit-email") as HTMLInputElement);
+        const pgp_key = (document.getElementById("user-edit-pubkey") as HTMLInputElement);
+        const id = (document.getElementById("user-edit-id") as HTMLInputElement).value;
+        if (password.value && password.value !== confirmation.value) {
+            return await show_edit_error("Passwords do not match");
+        }
+        const request = {
+            id: parseInt(id),
+            ...(password.value ? {password: password.value} : {}),
+            ...(name.value ? {name: name.value} : {}),
+            ...(email.value ? {email: email.value} : {}),
+            ...(pgp_key.value ? {pgp_key: pgp_key.value} : {}),
+        };
+        const response = await window.fetch("/api/user/edit", {
+            method: 'post',
+            headers: {
+                'content-type': 'application/json;charset=UTF-8',
+            },
+            body: JSON.stringify(request),
+        });
+        if (response.status == 200) {
+            return document.location.reload();
+        }
+        const json = await response.json();
+        if (json.message) {
+            return await show_edit_error(json.message);
         }
     }
 }

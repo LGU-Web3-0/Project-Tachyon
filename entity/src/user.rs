@@ -80,6 +80,31 @@ impl Model {
         Ok(key.fingerprint().to_string())
     }
 
+    pub fn get_public_key<S: AsRef<str>>(armored: S) -> anyhow::Result<Vec<u8>> {
+        let mut pgp_key = None;
+        let mut parser =
+            sequoia_openpgp::parse::PacketParserBuilder::from_bytes(armored.as_ref().as_bytes())?
+                .dearmor(Dearmor::Auto(armor::ReaderMode::VeryTolerant))
+                .build()?;
+        while let PacketParserResult::Some(p) = parser {
+            let (packet, next) = p.recurse().unwrap();
+            parser = next;
+            if let Packet::PublicKey(_) = packet {
+                pgp_key.replace(SerializeInto::to_vec(&packet)?);
+                break;
+            }
+        }
+        pgp_key.ok_or_else(|| anyhow!("invalid pubkey"))
+    }
+
+    pub fn hash_password<S: AsRef<str>>(raw_password: S) -> anyhow::Result<String> {
+        let config: argon2::Config = argon2::Config::default();
+        let mut salt = [0u8; 64];
+        nanorand::tls_rng().fill_bytes(&mut salt);
+        let password = argon2::hash_encoded(raw_password.as_ref().as_bytes(), &salt, &config)?;
+        Ok(password)
+    }
+
     pub fn prepare<S0, S1, S2, S3>(
         name: S0,
         email: S1,
@@ -92,31 +117,14 @@ impl Model {
         S2: AsRef<str>,
         S3: AsRef<str>,
     {
-        let config: argon2::Config = argon2::Config::default();
-        let mut salt = [0u8; 64];
-        nanorand::tls_rng().fill_bytes(&mut salt);
-        let password = argon2::hash_encoded(password.as_ref().as_bytes(), &salt, &config)?;
-        let mut parser =
-            sequoia_openpgp::parse::PacketParserBuilder::from_bytes(key.as_ref().as_bytes())?
-                .dearmor(Dearmor::Auto(armor::ReaderMode::VeryTolerant))
-                .build()?;
-        let mut pgp_key = None;
-        while let PacketParserResult::Some(p) = parser {
-            let (packet, next) = p.recurse().unwrap();
-            parser = next;
-            if let Packet::PublicKey(_) = packet {
-                pgp_key.replace(SerializeInto::to_vec(&packet)?);
-                break;
-            }
-        }
+        let password = Self::hash_password(password)?;
+        let pgp_key = Self::get_public_key(key)?;
         Ok(ActiveModel {
             id: ActiveValue::NotSet,
             name: ActiveValue::Set(name.as_ref().to_owned()),
             email: ActiveValue::Set(email.as_ref().to_owned()),
             password: ActiveValue::Set(password),
-            pgp_key: ActiveValue::Set(
-                pgp_key.ok_or_else(|| anyhow!("public key not found from packet"))?,
-            ),
+            pgp_key: ActiveValue::Set(pgp_key),
             wrong_pass_attempt: ActiveValue::Set(0),
         })
     }
