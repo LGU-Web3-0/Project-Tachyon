@@ -124,7 +124,7 @@
                                     </p>
                                     <% if i.author.email == email {%>
                                         <div class="flex flex-row space-x-4 self-end p-2">
-                                            <button class="bg-red-500 hover:bg-red-700 text-sm text-white py-1 px-1 rounded"> Delete </button>
+                                            <button onclick='Tachyon.Task.delete_comment(<%= i.id %>)' class="bg-red-500 hover:bg-red-700 text-sm text-white py-1 px-1 rounded"> Delete </button>
                                         </div>
                                     <% } %>
                                 </div>
@@ -134,11 +134,11 @@
                     <% } %>
                 </div>
                 <div class="flex flex-col w-full shadow-lg rounded-2xl bg-white p-4 space-y-4">
-                    <textarea id="comment-area" class="z-50 w-full"></textarea>
+                    <textarea id="comment-area" class="z-50 w-full opacity-75"></textarea>
                     <script>
                         var editor = new SimpleMDE({ element: document.getElementById("comment-area") });
                     </script>
-                    <button class="bg-green-500 hover:bg-green-700 text-sm text-white py-1 px-1 rounded w-1/16"> Submit </button>
+                    <button onclick='Tachyon.Task.add_comment(<%= task_id %>, editor)' class="bg-green-500 hover:bg-green-700 text-sm text-white py-1 px-1 rounded"> Submit </button>
                 </div>
             </div>
         </div>

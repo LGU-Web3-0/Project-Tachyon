@@ -1,7 +1,9 @@
 use crate::session::UserInfo;
 use crate::State;
 use actix_session::Session;
-use actix_web::error::{ErrorBadRequest, ErrorInternalServerError, ErrorNotFound};
+use actix_web::error::{
+    ErrorBadRequest, ErrorInternalServerError, ErrorNotFound, ErrorUnauthorized,
+};
 use actix_web::web::Json;
 use actix_web::{http, web, HttpResponse, Result};
 use entity::sea_orm::entity::prelude::*;
@@ -223,7 +225,7 @@ pub async fn resolve_task(
                 .ok_or_else(|| ErrorNotFound("no such task"))?;
 
             let mut active_task: entity::task::ActiveModel = task.into();
-            let finish: DateTimeUtc = request.finish_date.clone();
+            let finish: DateTimeUtc = request.finish_date;
             active_task.finish_date = ActiveValue::Set(Some(finish));
             match active_task
                 .update(&data.sql_db)
@@ -295,6 +297,68 @@ pub async fn delete_task(
                         .status(status)
                         .body(x)
                 })
+        }
+    }
+}
+
+#[derive(serde::Serialize, serde::Deserialize)]
+pub struct AddCommentRequest {
+    pub task_id: i64,
+    pub content: String,
+}
+
+pub async fn add_comment(
+    request: Json<AddCommentRequest>,
+    session: Session,
+    data: web::Data<State>,
+) -> Result<HttpResponse> {
+    match session.get::<UserInfo>("user").unwrap_or(None) {
+        None => Err(ErrorUnauthorized("no login info")),
+        Some(user_info) => {
+            let request = request.into_inner();
+            let comment = entity::task_discussion::ActiveModel {
+                id: ActiveValue::NotSet,
+                task_id: ActiveValue::Set(request.task_id),
+                update_time: ActiveValue::Set(chrono::Utc::now()),
+                user_id: ActiveValue::Set(user_info.id),
+                content: ActiveValue::Set(request.content),
+            };
+            comment
+                .insert(&data.sql_db)
+                .await
+                .map_err(ErrorInternalServerError)?;
+            Ok(HttpResponse::Ok().finish())
+        }
+    }
+}
+
+#[derive(serde::Serialize, serde::Deserialize)]
+pub struct DeleteCommentRequest {
+    pub comment_id: i64,
+}
+
+pub async fn delete_comment(
+    request: Json<DeleteCommentRequest>,
+    session: Session,
+    data: web::Data<State>,
+) -> Result<HttpResponse> {
+    match session.get::<UserInfo>("user").unwrap_or(None) {
+        None => Err(ErrorUnauthorized("no login info")),
+        Some(user_info) => {
+            let request = request.into_inner();
+            let comment = entity::task_discussion::Entity::find_by_id(request.comment_id)
+                .one(&data.sql_db)
+                .await
+                .map_err(ErrorBadRequest)?
+                .ok_or_else(|| ErrorNotFound("no such comment"))?;
+            if comment.user_id != user_info.id {
+                return Err(ErrorUnauthorized("no permission"));
+            }
+            comment
+                .delete(&data.sql_db)
+                .await
+                .map_err(ErrorInternalServerError)?;
+            Ok(HttpResponse::Ok().finish())
         }
     }
 }
