@@ -167,7 +167,6 @@ pub async fn edit_task(
             }
         }
     };
-
     simd_json::to_string(&json)
         .map_err(ErrorInternalServerError)
         .map(|x| {
