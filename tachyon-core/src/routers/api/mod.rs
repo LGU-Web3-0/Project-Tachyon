@@ -28,4 +28,6 @@ pub fn routers() -> Scope {
         .route("/task/edit", web::post().to(task::edit_task))
         .route("/task/resolve", web::post().to(task::resolve_task))
         .route("/task/delete", web::post().to(task::delete_task))
+        .route("/task/comment/add", web::post().to(task::add_comment))
+        .route("/task/comment/delete", web::post().to(task::delete_comment))
 }
