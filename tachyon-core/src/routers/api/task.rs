@@ -17,6 +17,12 @@ pub struct AddTaskResult {
 }
 
 #[derive(serde::Serialize, serde::Deserialize, Debug)]
+pub struct AssignTaskResult {
+    success: bool,
+    message: Option<String>,
+}
+
+#[derive(serde::Serialize, serde::Deserialize, Debug)]
 pub struct EditTaskResult {
     success: bool,
     message: Option<String>,
@@ -41,6 +47,13 @@ pub struct AddTaskRequest {
     create_date: DateTimeUtc,
     due_date: DateTimeUtc,
     description: String,
+}
+
+#[derive(PartialEq, serde::Serialize, serde::Deserialize, Debug, Validate)]
+pub struct AssignTaskRequest {
+    task_id: i64,
+    user_id: i64,
+    assign_date: DateTimeUtc,
 }
 
 #[derive(PartialEq, serde::Serialize, serde::Deserialize, Debug, Validate)]
@@ -361,4 +374,83 @@ pub async fn delete_comment(
             Ok(HttpResponse::Ok().finish())
         }
     }
+pub async fn assign(
+    request: Json<AssignTaskRequest>,
+    session: Session,
+    data: web::Data<State>,
+) -> Result<HttpResponse> {
+    async fn assign_task(
+        req: &Json<AssignTaskRequest>,
+        db: &DatabaseConnection,
+    ) -> AssignTaskResult {
+        match req.validate() {
+            Ok(_) => {}
+            Err(e) => {
+                return AssignTaskResult {
+                    success: false,
+                    message: Some(format!("{}", e)),
+                };
+            }
+        }
+
+        let prepared = entity::task_user_assignment::Model::prepare(
+            req.task_id.clone(),
+            req.user_id.clone(),
+            req.assign_date.clone(),
+        );
+        if let Ok(model) = prepared {
+            match model.insert(db).await {
+                Ok(_) => AssignTaskResult {
+                    success: true,
+                    message: None,
+                },
+                Err(e) => AssignTaskResult {
+                    success: false,
+                    message: Some(format!("{}", e)),
+                },
+            }
+        } else {
+            AssignTaskResult {
+                success: false,
+                message: unsafe { Some(format!("{}", prepared.unwrap_err_unchecked())) },
+            }
+        }
+    }
+    let mut status = http::StatusCode::OK;
+    let json = match session.get::<UserInfo>("user") {
+        Err(e) => {
+            status = http::StatusCode::INTERNAL_SERVER_ERROR;
+            AssignTaskResult {
+                success: false,
+                message: Some(format!("{}", e)),
+            }
+        }
+        Ok(Some(user)) if user.perms.team_management => assign_task(&request, &data.sql_db).await,
+
+        Ok(Some(user)) => {
+            status = http::StatusCode::FORBIDDEN;
+            AssignTaskResult {
+                success: false,
+                message: Some(format!(
+                    "User {} does not have permission to add tasks",
+                    user.name
+                )),
+            }
+        }
+        Ok(_) => {
+            status = http::StatusCode::UNAUTHORIZED;
+            AssignTaskResult {
+                success: false,
+                message: Some("unauthorized".to_string()),
+            }
+        }
+    };
+    simd_json::to_string(&json)
+        .map_err(ErrorInternalServerError)
+        .map(|x| {
+            HttpResponse::Ok()
+                .content_type("application/json")
+                .status(status)
+                .body(x)
+        })
 }

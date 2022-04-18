@@ -1,4 +1,6 @@
+use anyhow::anyhow;
 use sea_orm::entity::prelude::*;
+use sea_orm::ActiveValue;
 use serde::{Deserialize, Serialize};
 
 #[derive(Copy, Clone, Default, Debug, DeriveEntity)]
@@ -60,3 +62,18 @@ impl RelationTrait for Relation {
 }
 
 impl ActiveModelBehavior for ActiveModel {}
+
+impl Model {
+    pub fn prepare(
+        task_id: i64,
+        user_id: i64,
+        assign_date: DateTimeUtc,
+    ) -> anyhow::Result<ActiveModel> {
+        Ok(ActiveModel {
+            id: ActiveValue::NotSet,
+            task_id: ActiveValue::Set(task_id),
+            user_id: ActiveValue::Set(user_id),
+            assign_date: ActiveValue::Set(assign_date),
+        })
+    }
+}

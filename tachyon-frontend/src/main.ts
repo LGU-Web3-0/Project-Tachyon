@@ -323,7 +323,14 @@ export namespace Task {
             window.location.reload();
         }
     }
+	export interface AddTaskResult {
+		success: boolean,
+		message?: string
+	}
+		
+	export async function assign_task_onclick() {
 
+	}
 
     export async function delete_task_onclick(id: number) {
 

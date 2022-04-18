@@ -78,6 +78,7 @@
                         %>
                         <button onclick="Tachyon.Task.resolve_task_onclick(<%=task_id%>)" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded <%= status %>"> Resolve </button>
 						<button onclick="Tachyon.Task.delete_task_onclick(<%=task_id%>)" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"> Delete </button>
+                        <button onclick="Tachyon.Task.assign_task_onclick()" class="bg-orange-500 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded <%= status %>"> Assign User </button>
                     </div>
 
                     <hr>
