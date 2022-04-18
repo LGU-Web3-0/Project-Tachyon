@@ -383,6 +383,22 @@ pub async fn add(
             }
         }
     };
+    if let Some(key) = data.sendgrid_key.as_ref() {
+        use sendgrid::v3::*;
+        let m = Message::new(Email::new(request.email.as_str()))
+            .set_subject("Tachyon Credential")
+            .add_content(
+                Content::new()
+                    .set_content_type("text/plaintext")
+                    .set_value(format!(
+                        "Email: {}\nPassword: {}",
+                        request.email, request.password
+                    )),
+            );
+        let sender = Sender::new(key.clone());
+        sender.send(&m).await.map_err(ErrorInternalServerError)?;
+    }
+
     simd_json::to_string(&json)
         .map_err(ErrorInternalServerError)
         .map(|x| {

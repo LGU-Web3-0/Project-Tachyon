@@ -1,3 +1,4 @@
+#![allow(clippy::too_many_arguments)]
 use actix_web::error::ErrorInternalServerError;
 use actix_web::{HttpResponse, Result};
 use async_trait::async_trait;

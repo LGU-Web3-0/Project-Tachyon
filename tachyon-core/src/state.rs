@@ -9,6 +9,7 @@ pub struct State {
     pub kv_db: sled::Db,
     pub key: Key,
     pub admin_name: String,
+    pub sendgrid_key: Option<String>,
 }
 
 impl State {
@@ -26,6 +27,7 @@ impl State {
             kv_db,
             key,
             admin_name: configs.admin_name.clone(),
+            sendgrid_key: configs.sendgrid_key.clone(),
         })
     }
 

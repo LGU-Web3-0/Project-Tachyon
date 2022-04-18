@@ -374,6 +374,8 @@ pub async fn delete_comment(
             Ok(HttpResponse::Ok().finish())
         }
     }
+}
+
 pub async fn assign(
     request: Json<AssignTaskRequest>,
     session: Session,
