@@ -2,7 +2,7 @@ use crate::session::UserInfo;
 use crate::{IntoAnyhow, State, StatusCode};
 use actix_multipart::Multipart;
 use actix_session::Session;
-use actix_web::error::ErrorInternalServerError;
+use actix_web::error::{ErrorBadRequest, ErrorInternalServerError};
 use actix_web::http::header::{ContentDisposition, ContentType, DispositionParam, DispositionType};
 use actix_web::web::Bytes;
 use actix_web::{error, web, HttpResponse, Result};
@@ -108,7 +108,15 @@ pub async fn upload(
                         data.extend(x?);
                     }
                     model.name = ActiveValue::Set(
-                        String::from_utf8(data).map_err(ErrorInternalServerError)?,
+                        String::from_utf8(data)
+                            .map_err(ErrorInternalServerError)
+                            .and_then(|x| {
+                                if x.trim().is_empty() {
+                                    Err(ErrorBadRequest("filename cannot be empty"))
+                                } else {
+                                    Ok(x.trim().to_string())
+                                }
+                            })?,
                     );
                 }
                 _ => (),
