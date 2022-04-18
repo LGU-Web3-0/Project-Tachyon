@@ -1,7 +1,7 @@
 use crate::session::UserInfo;
 use crate::{session, IntoAnyhow, State};
 use actix_session::Session;
-use actix_web::error::{ErrorBadRequest, ErrorInternalServerError};
+use actix_web::error::{ErrorBadRequest, ErrorInternalServerError, ErrorNotFound};
 use actix_web::http::StatusCode;
 use actix_web::web::Json;
 use actix_web::{http, web, HttpResponse, Result};
@@ -9,7 +9,7 @@ use anyhow::anyhow;
 use entity::sea_orm::DatabaseBackend::Postgres;
 use entity::sea_orm::{
     ActiveModelTrait, ColumnTrait, ConnectionTrait, DatabaseBackend, DatabaseConnection,
-    EntityTrait, QueryFilter, Statement,
+    EntityTrait, ModelTrait, QueryFilter, Statement,
 };
 use uuid::Uuid;
 use validator::Validate;
@@ -250,12 +250,12 @@ pub async fn login(
 }
 
 #[derive(serde::Serialize, serde::Deserialize, Debug)]
-pub struct UserLockRequest {
+pub struct UserIdentification {
     pub id: i64,
 }
 
 pub async fn lock(
-    request: Json<UserLockRequest>,
+    request: Json<UserIdentification>,
     session: Session,
     data: web::Data<State>,
 ) -> Result<HttpResponse> {
@@ -274,7 +274,7 @@ pub async fn lock(
 }
 
 pub async fn unlock(
-    request: Json<UserLockRequest>,
+    request: Json<UserIdentification>,
     session: Session,
     data: web::Data<State>,
 ) -> Result<HttpResponse> {
@@ -290,6 +290,30 @@ pub async fn unlock(
         .await
         .map_err(ErrorBadRequest)?;
     Ok(HttpResponse::Ok().finish())
+}
+
+pub async fn delete(
+    request: Json<UserIdentification>,
+    session: Session,
+    data: web::Data<State>,
+) -> Result<HttpResponse> {
+    match session.get::<UserInfo>("user").unwrap_or(None) {
+        None => Ok(HttpResponse::Unauthorized().finish()),
+        Some(user_info) => {
+            let user = entity::user::Entity::find_by_id(request.id)
+                .one(&data.sql_db)
+                .await
+                .map_err(ErrorBadRequest)?
+                .ok_or_else(|| ErrorNotFound("no such user"))?;
+            user.delete(&data.sql_db)
+                .await
+                .map_err(ErrorInternalServerError)?;
+            if request.id == user_info.id {
+                session.remove("user");
+            }
+            Ok(HttpResponse::Ok().finish())
+        }
+    }
 }
 
 pub async fn add(

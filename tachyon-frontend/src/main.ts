@@ -134,6 +134,32 @@ export namespace UserView {
             return document.location.reload();
         }
     }
+    export async function user_delete_trigger(id: number, name: string, email: string, fingerprint: string) {
+        (document.getElementById("user-del-id") as HTMLInputElement).value = id.toString();
+        (document.getElementById("user-del-name") as HTMLInputElement).value = name;
+        (document.getElementById("user-del-email") as HTMLInputElement).value = email;
+        (document.getElementById("user-del-fingerprint") as HTMLInputElement).value = fingerprint;
+        document.getElementById("delete-user-modal").classList.remove("hidden");
+    }
+    export async function user_delete_cancel() {
+        document.getElementById("delete-user-modal").classList.add("hidden");
+    }
+    export async function user_delete() {
+        const id = (document.getElementById("user-del-id") as HTMLInputElement).value;
+        const request = {
+            id: parseInt(id),
+        };
+        const response = await window.fetch("/api/user/delete", {
+            method: 'delete',
+            headers: {
+                'content-type': 'application/json;charset=UTF-8',
+            },
+            body: JSON.stringify(request),
+        });
+        if (response.status == 200) {
+            return window.location.reload();
+        }
+    }
 }
 
 export namespace Obj {
