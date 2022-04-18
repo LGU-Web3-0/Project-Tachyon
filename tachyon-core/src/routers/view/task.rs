@@ -108,7 +108,7 @@ pub async fn detail(
         // comments vec<comment>
         comment_and_user,
         // description string
-        "",
+        task.description,
     );
     template.render_response().await
 }
