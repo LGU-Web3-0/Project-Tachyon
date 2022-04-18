@@ -351,6 +351,16 @@ export namespace Task {
 		 return await response.json()
 											
 	}
+
+    export async function search_task_onclick() {
+        let keywords = (document.getElementById("keywords") as HTMLInputElement).value;
+        let page_size = (document.getElementById("pagesize") as HTMLInputElement).value;
+        let encoded = new URLSearchParams({
+            page_size,
+            ...(keywords ? { search_string: keywords } : {})
+        });
+        window.location.href = "/view/task?" + encoded;
+    }
 }
 
 export function test() {

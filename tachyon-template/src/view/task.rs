@@ -41,13 +41,25 @@ impl TaskTemplate {
         page_size: usize,
         prev_page: Option<usize>,
         next_page: Option<usize>,
+        search_string: Option<&String>,
     ) -> Self {
         let email_hash = email_hash(email);
-        let prev_page_url =
+        let mut prev_page_url =
             prev_page.map(|n| format!("/view/task?page_size={}&page_no={}", page_size, n));
-        let next_page_url =
+        let mut next_page_url =
             next_page.map(|n| format!("/view/task?page_size={}&page_no={}", page_size, n));
-
+        if let Some(s) = search_string {
+            prev_page_url = prev_page_url.map(|mut url| {
+                url.push_str("&search_string=");
+                url.push_str(urlencoding::encode(s).as_ref());
+                url
+            });
+            next_page_url = next_page_url.map(|mut url| {
+                url.push_str("&search_string=");
+                url.push_str(urlencoding::encode(s).as_ref());
+                url
+            });
+        }
         Self {
             title: title.as_ref().to_string(),
             email_hash,

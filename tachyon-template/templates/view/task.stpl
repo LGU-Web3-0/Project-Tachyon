@@ -27,6 +27,12 @@
                                value="10"/>
                     </div>
 
+                    <button onclick="Tachyon.Task.search_task_onclick()"
+                            class="bg-gradient-to-r from-green-400 to-blue-500 hover:from-pink-500 hover:to-yellow-500 text-white font-bold py-0.5 px-6 rounded-lg">
+                        Search
+                    </button>
+
+
 
                     <button onclick="Tachyon.Task.add_task_onclick()"
                             class="bg-gradient-to-r from-green-400 to-blue-500 hover:from-pink-500 hover:to-yellow-500 text-white font-bold py-0.5 px-6 rounded-lg">

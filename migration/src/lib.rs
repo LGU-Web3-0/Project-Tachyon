@@ -16,6 +16,7 @@ mod m20220101_000010_create_task_discussion_table;
 mod m20220101_000011_create_task_user_assignment_table;
 mod m20220101_000012_create_task_discussion_attachment_table;
 mod m20220101_000013_add_task_description;
+mod m20220101_000014_add_task_tsvector;
 
 pub struct Migrator;
 
@@ -36,6 +37,7 @@ impl MigratorTrait for Migrator {
             box m20220101_000011_create_task_user_assignment_table::Migration,
             box m20220101_000012_create_task_discussion_attachment_table::Migration,
             box m20220101_000013_add_task_description::Migration,
+            box m20220101_000014_add_task_tsvector::Migration,
         ]
     }
 }

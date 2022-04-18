@@ -5,13 +5,14 @@ use actix_web::error::{ErrorInternalServerError, ErrorNotFound, ErrorUnauthorize
 use actix_web::web::Data;
 use actix_web::web::Path;
 use actix_web::{HttpResponse, Result};
-use entity::sea_orm::{DbBackend, EntityTrait, PaginatorTrait, QueryOrder, Statement};
-use sea_query::Order;
+use entity::sea_orm::{DbBackend, EntityTrait, PaginatorTrait, QueryFilter, QueryOrder, Statement};
+use sea_query::{Expr, Order};
 use tachyon_template::view::{Comment, TaskDetailTemplate, UserData};
 use tachyon_template::{view::TaskTemplate, AsyncRenderOnce};
 
 #[derive(serde::Serialize, serde::Deserialize)]
 pub struct TaskRequest {
+    search_string: Option<String>,
     page_no: Option<usize>,
     page_size: Option<usize>,
 }
@@ -20,7 +21,8 @@ fn convert_task_info<I>(task: I, email: &str) -> Vec<tachyon_template::view::Tas
 where
     I: Iterator<Item = entity::task::Model>,
 {
-    task.map(|t| {
+    task.map(|mut t| {
+        t.description.truncate(64);
         tachyon_template::view::TaskItem::new(t.id, email.to_owned(), t.name, t.description)
     })
     .collect()
@@ -121,7 +123,15 @@ pub async fn handler(
     match session.get::<UserInfo>("user")? {
         None => Err(ErrorUnauthorized("login info not found")),
         Some(user) => {
-            let page = entity::task::Entity::find();
+            let mut page = entity::task::Entity::find();
+            if let Some(keywords) = &request.search_string {
+                log::debug!("search string: {}", keywords);
+                let expr = Expr::cust_with_values(
+                    "task_search_vector @@ plainto_tsquery(?)",
+                    vec![keywords.to_string()],
+                );
+                page = page.filter(expr);
+            }
             let page_size = request.page_size.unwrap_or(10);
             let paginator = page
                 .order_by(entity::task::Column::Id, Order::Asc)
@@ -151,6 +161,7 @@ pub async fn handler(
                 page_size,
                 prev_page,
                 next_page,
+                request.search_string.as_ref(),
             )
             .render_response()
             .await
