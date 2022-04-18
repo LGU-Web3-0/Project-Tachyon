@@ -67,7 +67,7 @@ pub async fn detail(
             r#"SELECT * 
                 FROM task_discussion 
                 WHERE task_discussion.task_id = $1
-                ORDER BY task_discussion.create_date DESC"#,
+                ORDER BY task_discussion.id DESC"#,
             vec![info.id.into()],
         ))
         .all(&state.sql_db)

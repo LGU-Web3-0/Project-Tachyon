@@ -23,7 +23,7 @@ export namespace Auth {
 	export async function really_add_task_onclick() {
          const task_name = (document.getElementById("task-name") as HTMLInputElement).value     
 		 const create_time = new Date().toISOString();
-         const due_time = (document.getElementById("due-time") as HTMLInputElement).value     
+         const due_time = (document.getElementById("due-time") as HTMLInputElement).valueAsDate.toISOString()
          const task_description = (document.getElementById("task-description") as HTMLInputElement).value   
 		 const result = await add_task(task_name, create_time, due_time, task_description)
 		 if (result.success) {
@@ -120,6 +120,12 @@ export namespace UserView {
         } else {
             window.location.href = "/view/user?" + new URLSearchParams({page_size}).toString();
         }
+    }
+    export async function add_modal_trigger() {
+        document.getElementById("add-user-modal").classList.remove("hidden");
+    }
+    export async function user_modal_cancel() {
+        document.getElementById("add-user-modal").classList.add("hidden");
     }
 }
 

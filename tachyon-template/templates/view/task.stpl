@@ -1,167 +1,174 @@
 <!DOCTYPE html>
 <html>
 
-	<head> 
-		<% include!("../header.stpl"); %>
-	</head>
+<head>
+    <% include!("../header.stpl"); %>
+</head>
 
 
-	<body>
-		<main class="bg-gray-100 dark:bg-gray-800 rounded-2xl relative h-screen overflow-hidden relative">
-			<div class="flex items-start justify-between">
-				<% include!("leftbar.stpl"); %>
-				<div class="flex flex-col w-full pl-0 md:p-4 md:space-y-4">
-					<% include!("hbar.stpl"); %>
-					<div class="container relative left-0 z-50 flex w-2/4 h-auto h-full">
-						<div class="relative flex items-center w-full lg:w-128 h-full group space-x-4">
-							<div class="flex flex-col w-full shadow-lg rounded-2xl">
-								<input type="text"
-									   id="keywords"
-									   class="block w-full py-1.5 pl-10 pr-4 leading-normal rounded-2xl focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 ring-opacity-90 bg-gray-100 dark:bg-gray-800 text-gray-400 aa-input"
-									   placeholder="Search"/>
-							</div>
-							<div class="flex flex-col w-full shadow-lg rounded-2xl">
-								<input type="number"
-			                           id="pagesize" name="quantity" min="1" max="15"
-									   class="block w-full py-1.5 pl-10 pr-4 leading-normal rounded-2xl focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 ring-opacity-90 bg-gray-100 dark:bg-gray-800 text-gray-400 aa-input"
-		   value="10"/>
-							</div>
+<body>
+<main class="bg-gray-100 dark:bg-gray-800 rounded-2xl relative h-screen overflow-hidden relative">
+    <div class="flex items-start justify-between">
+        <% include!("leftbar.stpl"); %>
+        <div class="flex flex-col w-full pl-0 md:p-4 md:space-y-4">
+            <% include!("hbar.stpl"); %>
+            <div class="container relative left-0 z-50 flex w-2/4 h-auto h-full">
+                <div class="relative flex items-center w-full lg:w-128 h-full group space-x-4">
+                    <div class="flex flex-col w-full shadow-lg rounded-2xl">
+                        <input type="text"
+                               id="keywords"
+                               class="block w-full py-1.5 pl-10 pr-4 leading-normal rounded-2xl focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 ring-opacity-90 bg-gray-100 dark:bg-gray-800 text-gray-400 aa-input"
+                               placeholder="Search"/>
+                    </div>
+                    <div class="flex flex-col w-full shadow-lg rounded-2xl">
+                        <input type="number"
+                               id="pagesize" name="quantity" min="1" max="15"
+                               class="block w-full py-1.5 pl-10 pr-4 leading-normal rounded-2xl focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 ring-opacity-90 bg-gray-100 dark:bg-gray-800 text-gray-400 aa-input"
+                               value="10"/>
+                    </div>
 
 
-							<button onclick="Tachyon.Auth.add_task_onclick()" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full">
-								Add Task
-							</button>
+                    <button onclick="Tachyon.Auth.add_task_onclick()"
+                            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full">
+                        Add Task
+                    </button>
 
 
-						</div>
-					</div>
-					<div class="flex flex-col w-full shadow-lg rounded-2xl">
-						<div class="overflow-x-auto sm:-mx-6 lg:-mx-8">
-							<div class="py-2 inline-block min-w-full sm:px-6 lg:px-8">
-								<div class="overflow-x-auto">
-									<table class="min-w-full">
-										<thead class="border-b">
-											<tr>
-												<th scope="col" class="text-sm font-medium text-gray-900 px-6 py-4 text-left">
-													#
-												</th>
-												<th scope="col" class="text-sm font-medium text-gray-900 px-6 py-4 text-left">
-													Avatar
-												</th>
-												<th scope="col" class="text-sm font-medium text-gray-900 px-6 py-4 text-left">
-													Name
-												</th>
-												<th scope="col" class="text-sm font-medium text-gray-900 px-6 py-4 text-left">
-													Description
-												</th>
-											</tr>                                                                                                     
-										</thead>                              
-										<tbody>
-											<% for task in items.into_iter() { %>
-											<tr class="bg-white border-b">
-												<td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-													<%= task.id %>
-												</td>
-												<td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
-													<img class="rounded"
-				  src="https://www.gravatar.com/avatar/<%= email_hash %>?s=20"/>
-												</td>
-												<td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
-													<%= task.name %>
-												</td>
-												<td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
-													<%= task.description %>
-												</td>
-												<td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
-													<button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full">
-														Edit
-													</button>
-												</td>
-											</tr>
-											<% } %>
-										</tbody>
-									</table>
-									<div class="p-4">
-										<% if let Some(url) = prev_page_url { %>
-										<a href="<%= url %>"
-			 class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full">
-			 Previous Page
-										</a>
-										<% } %>
+                </div>
+            </div>
+            <div class="flex flex-col w-full shadow-lg rounded-2xl">
+                <div class="overflow-x-auto sm:-mx-6 lg:-mx-8">
+                    <div class="py-2 inline-block min-w-full sm:px-6 lg:px-8">
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full">
+                                <thead class="border-b">
+                                <tr>
+                                    <th scope="col" class="text-sm font-medium text-gray-900 px-6 py-4 text-left">
+                                        #
+                                    </th>
+                                    <th scope="col" class="text-sm font-medium text-gray-900 px-6 py-4 text-left">
+                                        Avatar
+                                    </th>
+                                    <th scope="col" class="text-sm font-medium text-gray-900 px-6 py-4 text-left">
+                                        Name
+                                    </th>
+                                    <th scope="col" class="text-sm font-medium text-gray-900 px-6 py-4 text-left">
+                                        Description
+                                    </th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <% for task in items.into_iter() { %>
+                                <tr class="bg-white border-b">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                        <%= task.id %>
+                                    </td>
+                                    <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
+                                        <img class="rounded"
+                                             src="https://www.gravatar.com/avatar/<%= email_hash %>?s=20"/>
+                                    </td>
+                                    <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
+                                        <%= task.name %>
+                                    </td>
+                                    <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
+                                        <%= task.description %>
+                                    </td>
+                                    <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
+                                        <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full">
+                                            Edit
+                                        </button>
+                                        <a href='/view/task/<%= task.id %>/detail' class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full">
+                                            Detail
+                                        </a>
+                                    </td>
+                                </tr>
+                                <% } %>
+                                </tbody>
+                            </table>
+                            <div class="p-4">
+                                <% if let Some(url) = prev_page_url { %>
+                                <a href="<%= url %>"
+                                   class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full">
+                                    Previous Page
+                                </a>
+                                <% } %>
 
-										<% if let Some(url) = next_page_url { %>
-										<a href="<%= url %>"
-			 class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full">
-			 Next Page
-										</a>
-										<% } %>
-									</div>
-								</div>
-							</div>
-						</div>
-					</div>
-
-
-
-
-					<!-- This example requires Tailwind CSS v2.0+ -->
-					<div id="add-task-modal" class="fixed z-50 inset-0 hidden  overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-						<div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-							<div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
-							<span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-							<div class="relative inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-								<div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-									<div class="sm:flex sm:items-start">
-										<div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
-											<svg class="h-6 w-6 text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-												<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-											</svg>
-										</div>
-										<div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-											<h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">Add New User</h3>
-											<div class="mt-2">
-												<p class="text-sm text-gray-500">Are you sure you want to deactivate your account? All of your data will be permanently removed. This action cannot be undone.</p >
-											</div>
-
-											<div class="mb-4">
-												<label class="font-bold text-grey-darker block mb-2">Task Name</label>
-												<input id="task-name" type="text" class="block appearance-none w-full bg-white border border-grey-light hover:border-grey px-2 py-2 rounded shadow" placeholder="Your Task Name" />
-											</div>
-											<div class="mb-4">
-												<label class="font-bold text-grey-darker block mb-2">Due Time</label>
-												<input id="due-time" type="text" class="block appearance-none w-full bg-white border border-grey-light hover:border-grey px-2 py-2 rounded shadow" placeholder="Your Task Due Time" />
-											</div>
-											<div class="mb-4">
-												<label class="font-bold text-grey-darker block mb-2">Task Description</label>
-												<input id="task-description" type="text" class="block appearance-none w-full bg-white border border-grey-light hover:border-grey px-2 py-2 rounded shadow" placeholder="Your Task Description" />
-											</div>
-
-										</div>
-									</div>
-								</div>
-								<div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-									<button onclick="Tachyon.Auth.really_add_task_onclick()"  type="button" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm">Add</button>
-									<button onclick="Tachyon.Auth.cancel_task_onclick()"  type="button" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">Cancel</button>
-								</div>
-							</div>
-						</div>
-					</div>
+                                <% if let Some(url) = next_page_url { %>
+                                <a href="<%= url %>"
+                                   class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full">
+                                    Next Page
+                                </a>
+                                <% } %>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
 
+            <!-- This example requires Tailwind CSS v2.0+ -->
+            <div id="add-task-modal" class="fixed z-50 inset-0 hidden  overflow-y-auto" aria-labelledby="modal-title"
+                 role="dialog" aria-modal="true">
+                <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+                    <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+                    <div class="relative inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                        <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                            <div class="sm:flex sm:items-start">
+                                <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+                                    <svg class="h-6 w-6 text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                         viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                                    </svg>
+                                </div>
+                                <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                                    <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">Add New
+                                        Task</h3>
+                                    <div class="mt-2">
+                                        <p class="text-sm text-gray-500">To add a new task, you need to provide its name, deadline and descriptions.</p>
+                                    </div>
+
+                                    <div class="mb-4">
+                                        <label class="font-bold text-grey-darker block mb-2">Task Name</label>
+                                        <input id="task-name" type="text"
+                                               class="block appearance-none w-full bg-white border border-grey-light hover:border-grey px-2 py-2 rounded shadow"
+                                               placeholder="Your Task Name"/>
+                                    </div>
+                                    <div class="mb-4">
+                                        <label class="font-bold text-grey-darker block mb-2">Due Time</label>
+                                        <input id="due-time" type="datetime-local"
+                                               class="block appearance-none w-full bg-white border border-grey-light hover:border-grey px-2 py-2 rounded shadow"
+                                               placeholder="Your Task Due Time"/>
+                                    </div>
+                                    <div class="mb-4">
+                                        <label class="font-bold text-grey-darker block mb-2">Task Description</label>
+                                        <input id="task-description" type="text"
+                                               class="block appearance-none w-full bg-white border border-grey-light hover:border-grey px-2 py-2 rounded shadow"
+                                               placeholder="Your Task Description"/>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                            <button onclick="Tachyon.Auth.really_add_task_onclick()" type="button"
+                                    class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm">
+                                Add
+                            </button>
+                            <button onclick="Tachyon.Auth.cancel_task_onclick()" type="button"
+                                    class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
 
+        </div>
 
-
-
-
-
-
-
-
-
-				</div>
-
-			</div>
-		</main>
-	</body>
+    </div>
+</main>
+</body>
 </html>
