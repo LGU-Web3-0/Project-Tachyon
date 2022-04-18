@@ -14,6 +14,12 @@ pub struct AddTaskResult {
     message: Option<String>,
 }
 
+#[derive(serde::Serialize, serde::Deserialize, Debug)]
+pub struct EditTaskResult {
+    success: bool,
+    message: Option<String>,
+}
+
 #[derive(PartialEq, serde::Serialize, serde::Deserialize, Debug, Validate)]
 pub struct AddTaskRequest {
     #[validate(length(min = 1))]
@@ -21,6 +27,12 @@ pub struct AddTaskRequest {
     create_date: DateTimeUtc,
     due_date: DateTimeUtc,
     description: String,
+}
+
+#[derive(PartialEq, serde::Serialize, serde::Deserialize, Debug)]
+pub struct EditTaskRequest {
+    id: i64,
+    updated_description: String,
 }
 
 pub async fn add_task(
@@ -87,6 +99,86 @@ pub async fn add_task(
         Ok(_) => {
             status = http::StatusCode::UNAUTHORIZED;
             AddTaskResult {
+                success: false,
+                message: Some("unauthorized".to_string()),
+            }
+        }
+    };
+    simd_json::to_string(&json)
+        .map_err(ErrorInternalServerError)
+        .map(|x| {
+            HttpResponse::Ok()
+                .content_type("application/json")
+                .status(status)
+                .body(x)
+        })
+}
+
+pub async fn edit_task(
+    request: Json<AddTaskRequest>,
+    session: Session,
+    data: web::Data<State>,
+) -> Result<HttpResponse> {
+    async fn do_edit_task(req: &Json<AddTaskRequest>, db: &DatabaseConnection) -> EditTaskResult {
+        match req.validate() {
+            Ok(_) => {}
+            Err(e) => {
+                return EditTaskResult {
+                    success: false,
+                    message: Some(format!("{}", e)),
+                };
+            }
+        }
+
+        let prepared = entity::task::Model::prepare(
+            &req.name,
+            &req.create_date,
+            &req.due_date,
+            &req.description,
+        );
+        if let Ok(model) = prepared {
+            match model.insert(db).await {
+                Ok(_) => EditTaskResult {
+                    success: true,
+                    message: None,
+                },
+                Err(e) => EditTaskResult {
+                    success: false,
+                    message: Some(format!("{}", e)),
+                },
+            }
+        } else {
+            EditTaskResult {
+                success: false,
+                message: unsafe { Some(format!("{}", prepared.unwrap_err_unchecked())) },
+            }
+        }
+    }
+
+    let mut status = http::StatusCode::OK;
+    let json = match session.get::<UserInfo>("user") {
+        Err(e) => {
+            status = http::StatusCode::INTERNAL_SERVER_ERROR;
+            EditTaskResult {
+                success: false,
+                message: Some(format!("{}", e)),
+            }
+        }
+        Ok(Some(user)) if user.perms.task_management => do_edit_task(&request, &data.sql_db).await,
+
+        Ok(Some(user)) => {
+            status = http::StatusCode::FORBIDDEN;
+            EditTaskResult {
+                success: false,
+                message: Some(format!(
+                    "User {} does not have permission to edit tasks",
+                    user.name
+                )),
+            }
+        }
+        Ok(_) => {
+            status = http::StatusCode::UNAUTHORIZED;
+            EditTaskResult {
                 success: false,
                 message: Some("unauthorized".to_string()),
             }
