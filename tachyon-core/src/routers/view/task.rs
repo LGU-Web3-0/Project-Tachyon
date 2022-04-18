@@ -93,23 +93,15 @@ pub async fn detail(
         }
     }
     let template = TaskDetailTemplate::new(
-        // title string
         "Task Detail | Project Tachyon",
-        // email string
         user.email.clone(),
-        // task_id i64
         info.id,
-        // name string
         task.name,
-        // create_at datetime
         task.create_date,
-        // finished_at datetime
         task.finish_date,
-        // assigned_users vec<userdata>
+        task.due_date,
         assigned_users,
-        // comments vec<comment>
         comment_and_user,
-        // description string
         task.description,
     );
     template.render_response().await
