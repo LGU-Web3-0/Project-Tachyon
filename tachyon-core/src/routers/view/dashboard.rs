@@ -20,7 +20,7 @@ pub async fn get_related_tasks(
             r#"
             SELECT * FROM task
             JOIN task_user_assignment
-            ON task_user_assignment.user_id = $1
+            ON task_user_assignment.user_id = $1 and task_user_assignment.task_id = task.id
             ORDER BY task.create_date DESC
             LIMIT 10
             "#,
