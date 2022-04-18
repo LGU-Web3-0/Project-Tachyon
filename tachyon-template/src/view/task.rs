@@ -152,7 +152,7 @@ impl Render for RawString {
 impl TaskDetailTemplate {
     #[allow(clippy::too_many_arguments)]
     pub fn new<T: AsRef<str>, E: AsRef<str>, N: AsRef<str>, D: AsRef<str>>(
-        is_admin : bool,
+        is_admin: bool,
         title: T,
         email: E,
         task_id: i64,
