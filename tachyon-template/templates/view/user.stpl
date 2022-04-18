@@ -28,6 +28,9 @@
                     <button onclick="Tachyon.UserView.search_onclick()" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full">
                         Search
                     </button>
+                    <button onclick="Tachyon.UserView.add_modal_trigger()"  class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-full">
+                        Add
+                    </button>
                 </div>
             </div>
             <div class="flex flex-col w-full shadow-lg rounded-2xl">
@@ -111,7 +114,76 @@
                 </div>
             </div>
         </div>
+        <div id="add-user-modal" class="fixed z-50 hidden inset-0 overflow-y-auto" aria-labelledby="modal-title"
+             role="dialog" aria-modal="true">
+            <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+                <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+                <div class="relative inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                        <div class="sm:flex sm:items-start">
+                            <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-green-100 sm:mx-0 sm:h-10 sm:w-10">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="h-6 w-6 text-green-600" viewBox="0 0 16 16">
+                                    <path d="M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
+                                    <path fill-rule="evenodd" d="M13.5 5a.5.5 0 0 1 .5.5V7h1.5a.5.5 0 0 1 0 1H14v1.5a.5.5 0 0 1-1 0V8h-1.5a.5.5 0 0 1 0-1H13V5.5a.5.5 0 0 1 .5-.5z"/>
+                                </svg>
+                            </div>
+                            <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                                <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">Add New
+                                    User</h3>
+                                <div class="mt-2">
+                                    <p class="text-sm text-gray-500">New users will added to the system. Please make sure the correctness of the credentials.</p>
+                                </div>
 
+                                <div class="mb-4">
+                                    <label class="font-bold text-grey-darker block mb-2">User Name</label>
+                                    <input id="user-name" type="text"
+                                           class="block appearance-none w-full bg-white border border-grey-light hover:border-grey px-2 py-2 rounded shadow"
+                                           placeholder="User Name"/>
+                                </div>
+                                <div class="mb-4">
+                                    <label class="font-bold text-grey-darker block mb-2">User Email</label>
+                                    <input id="user-email" type="text"
+                                           class="block appearance-none w-full bg-white border border-grey-light hover:border-grey px-2 py-2 rounded shadow"
+                                           placeholder="User Email"/>
+                                </div>
+                                <div class="mb-4">
+                                    <label class="font-bold text-grey-darker block mb-2">User Password</label>
+                                    <input id="user-password" type="password"
+                                           class="block appearance-none w-full bg-white border border-grey-light hover:border-grey px-2 py-2 rounded shadow"
+                                           placeholder="User Password"/>
+                                </div>
+
+                                <div class="mb-4">
+                                    <label class="font-bold text-grey-darker block mb-2">User Password Confirmation</label>
+                                    <input id="user-password-confirmation" type="password"
+                                           class="block appearance-none w-full bg-white border border-grey-light hover:border-grey px-2 py-2 rounded shadow"
+                                           placeholder="User Password"/>
+                                </div>
+
+                                <div class="mb-4">
+                                    <label class="font-bold text-grey-darker block mb-2">User PGP Pubkey</label>
+                                    <input id="user-public-key" type="text"
+                                           class="block appearance-none w-full bg-white border border-grey-light hover:border-grey px-2 py-2 rounded shadow"
+                                           placeholder="User PGP Pubkey"/>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                        <button onclick="Tachyon.UserView.user_addition()" type="button"
+                                class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:ml-3 sm:w-auto sm:text-sm">
+                            Add
+                        </button>
+                        <button onclick="Tachyon.UserView.user_modal_cancel()" type="button"
+                                class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </main>
 </body>
