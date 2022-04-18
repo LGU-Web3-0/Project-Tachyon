@@ -53,7 +53,7 @@ pub async fn detail(
             DbBackend::Postgres,
             r#"SELECT * 
                 FROM "user" 
-                JOIN task_user_assignment ON task_user_assignment.task_id = $1
+                JOIN task_user_assignment ON task_user_assignment.task_id = $1 AND task_user_assignment.user_id = "user".id
                 ORDER BY "user".id"#,
             vec![info.id.into()],
         ))
