@@ -6,12 +6,12 @@
 </head>
 
 <body>
-<main class="bg-gray-100 dark:bg-gray-800 rounded-2xl relative h-screen overflow-hidden relative">
+<main class="bg-gray-100 dark:bg-gray-800 relative h-screen overflow-hidden relative">
     <div class="flex items-start justify-between">
         <% include!("leftbar.stpl"); %>
         <div class="flex flex-col w-full pl-0 md:p-4 md:space-y-4">
             <% include!("hbar.stpl"); %>
-            <div class="flex flex-col w-full shadow-lg rounded-2xl bg-white p-4 opacity-50 space-y-4">
+            <div class="flex flex-col w-full shadow-lg rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 p-4 space-y-4">
                 <div class="w-full h-auto flex flex-row">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
@@ -21,24 +21,30 @@
                 <br />
                 <p hidden id="form-message"> </p>
                 <form class="flex flex-col w-full h-auto space-y-4" id="upload-form" action="/api/object/upload" method="post" enctype="multipart/form-data">
-                    <div class="flex flex-row w-full space-x-4">
-                        <div class="w-1/8 h-auto">
+                    <div class="flex flex-row w-full space-x-4 h-8">
+                        <div class="h-auto align-middle">
                             File
                         </div>
-                        <input type="file" name="file" class="rounded border-2 border-slate-300 w-7/8 h-auto">
+                        <div class="h-auto align-middle">
+                            <input type="file" name="file" class="rounded border-2 border-slate-300 w-7/8 h-auto">
+                        </div>
                     </div>
-                    <div class="flex flex-row w-full space-x-4">
-                        <div class="w-1/8 h-auto">
+                    <div class="flex flex-row w-full space-x-4 h-8">
+                        <div class="h-auto align-middle">
                             File Name
                         </div>
-                        <input type="text" name="filename" class="rounded border-2 border-slate-300 w-7/8 h-auto">
+                        <div class="h-auto align-middle">
+                            <input type="text" name="filename" class="rounded border-2 border-slate-300 w-7/8 h-auto">
+                        </div>
                     </div>
 
-                    <div class="flex flex-row w-full space-x-4">
-                        <div class="w-1/8 h-auto">
+                    <div class="flex flex-row w-full space-x-4 h-8">
+                        <div class="h-auto align-middle">
                             Visible
                         </div>
-                        <input type="checkbox" name="visibility">
+                        <div class="h-auto align-middle">
+                            <input type="checkbox" name="visibility">
+                        </div>
                     </div>
                 </form>
 
@@ -53,51 +59,51 @@
                 <div class="overflow-x-auto sm:-mx-6 lg:-mx-8">
                     <div class="py-2 inline-block min-w-full sm:px-6 lg:px-8">
                         <div class="overflow-x-auto">
-                            <table class="min-w-full">
-                                <thead class="border-b">
+                            <table class="min-w-full rounded-lg shadow-lg bg-white dark:bg-gray-700 text-sm text-gray-900 dark:text-gray-100" style="border-collapse: separate>
+                                <thead class="font-medium">
                                 <tr>
-                                    <th scope="col" class="text-sm font-medium text-gray-900 px-6 py-4 text-left">
+                                    <th scope="col" class="border-b px-6 py-4 text-left">
                                         Name
                                     </th>
-                                    <th scope="col" class="text-sm font-medium text-gray-900 px-6 py-4 text-left">
+                                    <th scope="col" class="border-b px-6 py-4 text-left">
                                         Uuid
                                     </th>
-                                    <th scope="col" class="text-sm font-medium text-gray-900 px-6 py-4 text-left">
+                                    <th scope="col" class="border-b px-6 py-4 text-left">
                                         Upload Date
                                     </th>
-                                    <th scope="col" class="text-sm font-medium text-gray-900 px-6 py-4 text-left">
+                                    <th scope="col" class="border-b px-6 py-4 text-left">
                                         Mimetype
                                     </th>
-                                    <th scope="col" class="text-sm font-medium text-gray-900 px-6 py-4 text-left">
+                                    <th scope="col" class="border-b px-6 py-4 text-left">
                                         Visibility
                                     </th>
-                                    <th scope="col" class="text-sm font-medium text-gray-900 px-6 py-4 text-left">
+                                    <th scope="col" class="border-b px-6 py-4 text-left">
                                         Download
                                     </th>
-                                    <th scope="col" class="text-sm font-medium text-gray-900 px-6 py-4 text-left">
+                                    <th scope="col" class="border-b px-6 py-4 text-left">
                                         Management
                                     </th>
                                 </tr>
                                 </thead>
                                 <tbody>
                                 <% for obj in objects.into_iter() { %>
-                                <tr class="bg-white border-b">
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap font-medium">
                                         <%= obj.name %>
                                     </td>
-                                    <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
+                                    <td class="px-6 py-4 whitespace-nowrap">
                                         <%= format!("{}", obj.uuid) %>
                                     </td>
-                                    <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
+                                    <td class="px-6 py-4 whitespace-nowrap">
                                         <%= obj.uploaded_at.to_string() %>
                                     </td>
-                                    <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
+                                    <td class="px-6 py-4 whitespace-nowrap">
                                         <%= obj.mimetype %>
                                     </td>
-                                    <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
+                                    <td class="px-6 py-4 whitespace-nowrap">
                                         <%= obj.visibility %>
                                     </td>
-                                    <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
+                                    <td class="px-6 py-4 whitespace-nowrap">
                                         <a href="/api/object/get?uuid=<%= format!("{}", obj.uuid) %>" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full">
                                             Download
                                         </a>

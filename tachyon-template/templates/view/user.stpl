@@ -6,24 +6,24 @@
 </head>
 
 <body>
-<main class="bg-gray-100 dark:bg-gray-800 rounded-2xl relative h-screen overflow-hidden relative">
+<main class="bg-gray-100 dark:bg-gray-800 relative h-screen overflow-hidden relative">
     <div class="flex items-start justify-between">
         <% include!("leftbar.stpl"); %>
         <div class="flex flex-col w-full pl-0 md:p-4 md:space-y-4">
             <% include!("hbar.stpl"); %>
             <div class="container relative left-0 z-50 flex w-2/4 h-auto h-full">
                 <div class="relative flex items-center w-full lg:w-128 h-full group space-x-4">
-                    <div class="flex flex-col w-full shadow-lg rounded-2xl">
+                    <div class="flex flex-col w-full shadow-lg rounded-lg">
                         <input type="text"
                                id="keywords"
-                               class="block w-full py-1.5 pl-10 pr-4 leading-normal rounded-2xl focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 ring-opacity-90 bg-gray-100 dark:bg-gray-800 text-gray-400 aa-input"
+                               class="block w-full py-1.5 pl-10 pr-4 leading-normal rounded-lg focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 ring-opacity-90 bg-gray-100 dark:bg-gray-700 text-gray-400 aa-input"
                                placeholder="Search"/>
                     </div>
-                    <div class="flex flex-col w-full shadow-lg rounded-2xl">
-                    <input type="number"
-                           id="pagesize" name="quantity" min="1" max="15"
-                           class="block w-full py-1.5 pl-10 pr-4 leading-normal rounded-2xl focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 ring-opacity-90 bg-gray-100 dark:bg-gray-800 text-gray-400 aa-input"
-                           value="10"/>
+                    <div class="flex flex-col w-full shadow-lg rounded-lg">
+                        <input type="number"
+                            id="pagesize" name="quantity" min="1" max="15"
+                            class="block w-full py-1.5 pl-10 pr-4 leading-normal rounded-lg focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 ring-opacity-90 bg-gray-100 dark:bg-gray-700 text-gray-400 aa-input"
+                            value="10"/>
                     </div>
                     <button onclick="Tachyon.UserView.search_onclick()" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full">
                         Search
@@ -37,55 +37,55 @@
                 <div class="overflow-x-auto sm:-mx-6 lg:-mx-8">
                     <div class="py-2 inline-block min-w-full sm:px-6 lg:px-8">
                         <div class="overflow-x-auto">
-                            <table class="min-w-full">
-                                <thead class="border-b">
+                            <table class="min-w-full rounded-lg shadow-lg bg-white dark:bg-gray-700 text-sm text-gray-900 dark:text-gray-100" style="border-collapse: separate>
+                                <thead class="font-medium">
                                 <tr>
-                                    <th scope="col" class="text-sm font-medium text-gray-900 px-6 py-4 text-left">
+                                    <th scope="col" class="border-b px-6 py-4 text-left">
                                         #
                                     </th>
-                                    <th scope="col" class="text-sm font-medium text-gray-900 px-6 py-4 text-left">
+                                    <th scope="col" class="border-b px-6 py-4 text-left">
                                         Avatar
                                     </th>
-                                    <th scope="col" class="text-sm font-medium text-gray-900 px-6 py-4 text-left">
+                                    <th scope="col" class="border-b px-6 py-4 text-left">
                                         Name
                                     </th>
-                                    <th scope="col" class="text-sm font-medium text-gray-900 px-6 py-4 text-left">
+                                    <th scope="col" class="border-b px-6 py-4 text-left">
                                         Email
                                     </th>
-                                    <th scope="col" class="text-sm font-medium text-gray-900 px-6 py-4 text-left">
+                                    <th scope="col" class="border-b px-6 py-4 text-left">
                                         Fingerprint
                                     </th>
-                                    <th scope="col" class="text-sm font-medium text-gray-900 px-6 py-4 text-left">
+                                    <th scope="col" class="border-b px-6 py-4 text-left">
                                         Locked
                                     </th>
-                                    <th scope="col" class="text-sm font-medium text-gray-900 px-6 py-4 text-left">
+                                    <th scope="col" class="border-b px-6 py-4 text-left">
                                         Manage
                                     </th>
                                 </tr>
                                 </thead>
                                 <tbody>
                                 <% for user in items.into_iter() { %>
-                                <tr class="bg-white border-b">
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap font-medium">
                                         <%= user.id %>
                                     </td>
-                                    <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
+                                    <td class="px-6 py-4 whitespace-nowrap">
                                         <img class="rounded"
                                              src="https://www.gravatar.com/avatar/<%= user.email_hash %>?s=20"/>
                                     </td>
-                                    <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
+                                    <td class="px-6 py-4 whitespace-nowrap">
                                         <%= user.name %>
                                     </td>
-                                    <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
+                                    <td class="px-6 py-4 whitespace-nowrap">
                                         <%= user.email %>
                                     </td>
-                                    <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
+                                    <td class="px-6 py-4 whitespace-nowrap">
                                         <%= user.fingerprint %>
                                     </td>
-                                    <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
+                                    <td class="px-6 py-4 whitespace-nowrap">
                                         <%= user.is_locked %>
                                     </td>
-                                    <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
+                                    <td class="px-6 py-4 whitespace-nowrap">
                                         <button onclick='Tachyon.UserView.user_edit_trigger(<%= user.id %>)' class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full">
                                             Edit
                                         </button>
