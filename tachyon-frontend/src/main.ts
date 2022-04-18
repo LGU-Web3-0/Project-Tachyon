@@ -276,6 +276,56 @@ export namespace Task {
 		success: boolean,
 		message?: string
 	}
+		
+
+
+	export async function delete_task_onclick(id: number){
+
+		let request = {
+			id,
+		};
+
+
+		const response = await window.fetch("/api/task/delete", {
+			method: 'post',                  
+			headers: {                       
+				'content-type': 'application/json;charset=UTF-8',
+			},                               
+			body: JSON.stringify(request),
+		});
+
+		await response.json()
+		window.location.href = "/view/task"
+
+	}
+
+
+
+
+	export async function resolve_task_onclick(id: number){
+
+		const finish_time = new Date().toISOString();
+
+		let request = {
+			id,
+			finish_date: finish_time
+		};
+
+
+		const response = await window.fetch("/api/task/resolve", {
+			method: 'post',                  
+			headers: {                       
+				'content-type': 'application/json;charset=UTF-8',
+			},                               
+			body: JSON.stringify(request),
+		});
+
+			await response.json()
+			window.location.reload();
+
+	}
+
+	
 
 	export async function edit_task_onclick(id: number){
 		(document.getElementById("task-edit-id") as HTMLInputElement).value = id.toString();
@@ -314,7 +364,7 @@ export namespace Task {
 		  const result = await response.json()
 		 if (result.success) {
 			 document.getElementById("add-task-modal").classList.add("hidden")
-			 window.location.reload()
+			 window.location.reload();
 		 }
 		 if (!result.success){
 			 document.getElementById("add-task-modal").classList.add("hidden")
@@ -330,7 +380,7 @@ export namespace Task {
 		 const result = await add_task(task_name, create_time, due_time, task_description)
 		 if (result.success) {
 			 document.getElementById("add-task-modal").classList.add("hidden")
-			 window.location.reload()
+			 window.location.reload();
 		 }
 		 if (!result.success){
 			 document.getElementById("add-task-modal").classList.add("hidden")
