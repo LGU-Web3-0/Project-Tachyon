@@ -218,9 +218,12 @@ export namespace Obj {
                 const message = document.getElementById("form-message") as HTMLParagraphElement;
                 if (result.success) {
                     message.hidden = false;
-                    message.textContent = "Upload successful!";
+                    message.textContent = "Uploaded successfully!";
                     message.classList.remove("text-red-500", "text-sm");
                     message.classList.add("text-sm", "text-green-500");
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
                 } else {
                     message.hidden = false;
                     message.textContent = "Upload failed: " + result.message;

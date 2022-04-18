@@ -15,6 +15,9 @@ pub struct DashboardTemplate {
     pub title: String,
     pub email_hash: String,
     pub related_tasks: Vec<RelatedTask>,
+    pub total_tasks: usize,
+    pub finished_tasks: usize,
+    pub due_works: [usize;6],
 }
 
 impl DashboardTemplate {
@@ -22,12 +25,18 @@ impl DashboardTemplate {
         title: S,
         email: E,
         related_tasks: Vec<RelatedTask>,
+        total_tasks: usize,
+        finished_tasks: usize,
+        due_works: [usize;6],
     ) -> Self {
         let email_hash = email_hash(email);
         Self {
             title: title.as_ref().to_string(),
             email_hash,
             related_tasks,
+            total_tasks,
+            finished_tasks,
+            due_works
         }
     }
 }

@@ -11,12 +11,9 @@ pub use user::*;
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Copy, Debug)]
 enum LeftBarItem {
     Dashboard,
-    Projects,
     MyTasks,
-    Calendar,
     User,
     Objects,
-    Settings,
 }
 
 trait LeftBar {

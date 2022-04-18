@@ -36,10 +36,6 @@
                         <button onclick="Tachyon.Auth.login_onclick()" class="px-4 py-2 font-semibold text-sm bg-blue-500 text-white rounded-md shadow-sm hover:-translate-y-1 hover:scale-110 hover:bg-indigo-500 ease-in-out delay-150 duration-300">
                             Login
                         </button>
-
-                        <a class="no-underline inline-block align-baseline font-bold text-sm text-blue hover:text-blue-dark float-right" href="#">
-                            Forgot Password?
-                        </a>
                     </div>
 
                 </div>
