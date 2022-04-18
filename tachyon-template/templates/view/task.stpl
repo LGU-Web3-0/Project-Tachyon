@@ -29,7 +29,7 @@
 
 
                     <button onclick="Tachyon.Task.add_task_onclick()"
-                            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full">
+                            class="bg-gradient-to-r from-green-400 to-blue-500 hover:from-pink-500 hover:to-yellow-500 text-white font-bold py-0.5 px-6 rounded-lg">
                         Add Task
                     </button>
 
