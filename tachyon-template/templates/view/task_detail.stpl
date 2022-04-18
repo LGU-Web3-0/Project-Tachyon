@@ -3,6 +3,8 @@
 
 <head>
     <% include!("../header.stpl"); %>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.css">
+    <script src="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.js"></script>
 </head>
 
 <body>
@@ -90,7 +92,6 @@
                 <div class="flex flex-col w-full shadow-lg rounded-2xl bg-white p-4 space-y-4">
                     <div class="flex flex-row space-x-4">
                         <h2 class="text-3xl text-bold"> Comments </h2>
-                        <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"> Add Comment </button>
                     </div>
                     <hr>
                     <% for i in comments.into_iter() {%>
@@ -123,7 +124,6 @@
                                     </p>
                                     <% if i.author.email == email {%>
                                         <div class="flex flex-row space-x-4 self-end p-2">
-                                            <button class="bg-blue-500 hover:bg-blue-700 text-sm text-white py-1 px-1 rounded"> Edit </button>
                                             <button class="bg-red-500 hover:bg-red-700 text-sm text-white py-1 px-1 rounded"> Delete </button>
                                         </div>
                                     <% } %>
@@ -132,6 +132,13 @@
                         </div>
 
                     <% } %>
+                </div>
+                <div class="flex flex-col w-full shadow-lg rounded-2xl bg-white p-4 space-y-4">
+                    <textarea id="comment-area" class="z-50 w-full"></textarea>
+                    <script>
+                        var editor = new SimpleMDE({ element: document.getElementById("comment-area") });
+                    </script>
+                    <button class="bg-green-500 hover:bg-green-700 text-sm text-white py-1 px-1 rounded w-1/16"> Submit </button>
                 </div>
             </div>
         </div>
