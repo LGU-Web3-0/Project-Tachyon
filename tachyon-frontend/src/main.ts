@@ -287,8 +287,13 @@ export namespace Task {
 		document.getElementById("add-task-modal").classList.remove("hidden")
 	}
 
-	export async function cancel_task_onclick() {
+	export async function cancel_edit_task_onclick() {
 		document.getElementById("edit-task-modal").classList.add("hidden")
+	}
+
+	
+	export async function cancel_task_onclick() {
+		document.getElementById("add-task-modal").classList.add("hidden")
 	}
 
 	export async function really_edit_task_onclick() {
