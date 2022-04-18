@@ -127,6 +127,65 @@ export namespace UserView {
     export async function user_modal_cancel() {
         document.getElementById("add-user-modal").classList.add("hidden");
     }
+    async function show_error_message(msg: string) {
+        const message = document.getElementById("error-message");
+        message.classList.remove("hidden");
+        message.textContent = msg;
+    }
+    export async function user_addition() {
+        const password = (document.getElementById("user-password") as HTMLInputElement).value;
+        const confirmation = (document.getElementById("user-password-confirmation") as HTMLInputElement).value;
+        if (password !== confirmation) {
+            return await show_error_message("Passwords do not match");
+        }
+        const name = (document.getElementById("user-name") as HTMLInputElement).value;
+        const email = (document.getElementById("user-email") as HTMLInputElement).value;
+        const gpg_key = (document.getElementById("user-public-key") as HTMLInputElement).value;
+        const request = {
+            name,
+            email,
+            password,
+            gpg_key,
+        };
+        const response = await window.fetch("/api/user/add", {
+            method: 'post',
+            headers: {
+                'content-type': 'application/json;charset=UTF-8',
+            },
+            body: JSON.stringify(request),
+        });
+        const result = await response.json();
+        if (result.success) {
+            return document.location.reload();
+        }
+        if (result.message) {
+            return await show_error_message(result.message);
+        }
+    }
+    export async function user_lock(id: number) {
+        const response = await window.fetch("/api/user/lock", {
+            method: 'post',
+            headers: {
+                'content-type': 'application/json;charset=UTF-8',
+            },
+            body: JSON.stringify({id}),
+        });
+        if (response.status == 200) {
+            return document.location.reload();
+        }
+    }
+    export async function user_unlock(id: number) {
+        const response = await window.fetch("/api/user/unlock", {
+            method: 'post',
+            headers: {
+                'content-type': 'application/json;charset=UTF-8',
+            },
+            body: JSON.stringify({id}),
+        });
+        if (response.status == 200) {
+            return document.location.reload();
+        }
+    }
 }
 
 export namespace Obj {
