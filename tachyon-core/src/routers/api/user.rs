@@ -102,6 +102,7 @@ pub async fn login(
             session: &Session,
             db: &entity::sea_orm::DatabaseConnection,
             pass: &str,
+            admin_name: &str,
         ) -> Result<HttpResponse> {
             // TODO: handle permission
             match user.verify_password(pass) {
@@ -129,7 +130,7 @@ pub async fn login(
                                     task_management: true,
                                     file_management: true,
                                     team_management: true,
-                                    user_management: true,
+                                    user_management: user.name == admin_name,
                                     system_management: true,
                                 },
                             },
@@ -231,6 +232,7 @@ pub async fn login(
                                         &session,
                                         &data.sql_db,
                                         &request.password,
+                                        &data.admin_name,
                                     )
                                     .await
                                 }
@@ -244,7 +246,14 @@ pub async fn login(
                 }
             }
         } else {
-            verify_pass_and_login(&target_user, &session, &data.sql_db, &request.password).await
+            verify_pass_and_login(
+                &target_user,
+                &session,
+                &data.sql_db,
+                &request.password,
+                &data.admin_name,
+            )
+            .await
         }
     }
 }
@@ -299,6 +308,7 @@ pub async fn delete(
 ) -> Result<HttpResponse> {
     match session.get::<UserInfo>("user").unwrap_or(None) {
         None => Ok(HttpResponse::Unauthorized().finish()),
+        Some(e) if !e.perms.user_management => Ok(HttpResponse::Unauthorized().finish()),
         Some(user_info) => {
             let user = entity::user::Entity::find_by_id(request.id)
                 .one(&data.sql_db)
@@ -441,7 +451,18 @@ pub async fn edit(
     session: Session,
     data: web::Data<State>,
 ) -> Result<HttpResponse> {
-    if session.get::<UserInfo>("user").unwrap_or(None).is_none() {
+    if session
+        .get::<UserInfo>("user")
+        .unwrap_or(None)
+        .and_then(|x| {
+            if x.perms.user_management {
+                Some(())
+            } else {
+                None
+            }
+        })
+        .is_none()
+    {
         return Ok(HttpResponse::Unauthorized().finish());
     }
     if !request.basic_validate() {

@@ -8,6 +8,7 @@ pub struct State {
     pub sql_db: DatabaseConnection,
     pub kv_db: sled::Db,
     pub key: Key,
+    pub admin_name: String,
 }
 
 impl State {
@@ -20,7 +21,12 @@ impl State {
         } else {
             Key::try_generate().ok_or_else(|| anyhow!("unable to generate cookie key"))?
         };
-        Ok(State { sql_db, kv_db, key })
+        Ok(State {
+            sql_db,
+            kv_db,
+            key,
+            admin_name: configs.admin_name.clone(),
+        })
     }
 
     #[cfg(all(not(miri), test, feature = "integration-test"))]
@@ -35,6 +41,11 @@ impl State {
             .path(format!("/tmp/tachyon-mock-test-{}", uuid))
             .open()?;
         let key = Key::try_generate().ok_or_else(|| anyhow!("unable to generate cookie key"))?;
-        Ok(State { sql_db, kv_db, key })
+        Ok(State {
+            sql_db,
+            kv_db,
+            key,
+            admin_name: "admin".to_string(),
+        })
     }
 }

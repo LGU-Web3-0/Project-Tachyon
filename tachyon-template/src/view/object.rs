@@ -13,6 +13,7 @@ pub struct ObjectItem {
 #[derive(TemplateOnce)]
 #[template(path = "view/object.stpl")]
 pub struct ObjectTemplate {
+    pub is_admin: bool,
     pub title: String,
     pub email_hash: String,
     pub objects: Vec<ObjectItem>,
@@ -23,6 +24,7 @@ pub struct ObjectTemplate {
 
 impl ObjectTemplate {
     pub fn new<S: AsRef<str>, E: AsRef<str>>(
+        is_admin: bool,
         title: S,
         email: E,
         objects: Vec<ObjectItem>,
@@ -32,6 +34,7 @@ impl ObjectTemplate {
     ) -> Self {
         let email_hash = email_hash(email);
         Self {
+            is_admin,
             title: title.as_ref().to_string(),
             email_hash,
             objects,

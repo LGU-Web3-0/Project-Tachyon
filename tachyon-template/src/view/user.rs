@@ -28,6 +28,7 @@ impl UserItem {
 #[derive(TemplateOnce)]
 #[template(path = "view/user.stpl")]
 pub struct UserTemplate {
+    pub is_admin: bool,
     pub title: String,
     pub email_hash: String,
     pub items: Vec<UserItem>,
@@ -37,6 +38,7 @@ pub struct UserTemplate {
 
 impl UserTemplate {
     pub fn new<S: AsRef<str>, E: AsRef<str>>(
+        is_admin: bool,
         title: S,
         email: E,
         items: Vec<UserItem>,
@@ -64,6 +66,7 @@ impl UserTemplate {
             });
         }
         Self {
+            is_admin,
             title: title.as_ref().to_string(),
             email_hash,
             items,

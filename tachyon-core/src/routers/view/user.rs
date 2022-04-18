@@ -77,6 +77,7 @@ pub async fn handler(
             log::debug!("select {} items", items.len());
             let converted = convert_user_info(items.into_iter());
             UserTemplate::new(
+                user.perms.user_management,
                 "User | Project Tachyon",
                 user.email,
                 converted,
