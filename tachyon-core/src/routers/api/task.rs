@@ -5,7 +5,7 @@ use actix_web::error::{ErrorBadRequest, ErrorInternalServerError, ErrorNotFound}
 use actix_web::web::Json;
 use actix_web::{http, web, HttpResponse, Result};
 use entity::sea_orm::entity::prelude::*;
-use entity::sea_orm::{ActiveModelTrait, DatabaseConnection};
+use entity::sea_orm::{ActiveModelTrait, ActiveValue, DatabaseConnection};
 use validator::Validate;
 
 #[derive(serde::Serialize, serde::Deserialize, Debug)]
@@ -134,14 +134,24 @@ pub async fn edit_task(
                 .await
                 .map_err(ErrorBadRequest)?
                 .ok_or_else(|| ErrorNotFound("no such task"))?;
-            let updated_task = entity::task::ActiveModel {
-                task
-            };
-            }
-            task.update()
-                .exec(&data.sql_db)
+
+            let mut active_task: entity::task::ActiveModel = task.into();
+            let upd_des: String = request.updated_description.clone();
+            active_task.description = ActiveValue::Set(upd_des);
+            match active_task
+                .update(&data.sql_db)
                 .await
-                .map_err(ErrorInternalServerError)?;
+                .map_err(ErrorInternalServerError)
+            {
+                Ok(_) => EditTaskResult {
+                    success: true,
+                    message: None,
+                },
+                Err(e) => EditTaskResult {
+                    success: false,
+                    message: Some(format!("{}", e)),
+                },
+            };
 
             EditTaskResult {
                 success: true,
