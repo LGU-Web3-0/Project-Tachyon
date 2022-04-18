@@ -30,7 +30,7 @@ pub struct Configs {
     pub fixed_key: Option<String>,
     pub log_level: String,
     pub admin_name: String,
-    pub sendgrid_key: Option<String>
+    pub sendgrid_key: Option<String>,
 }
 
 #[derive(Deserialize, Serialize, Debug, Clone)]

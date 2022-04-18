@@ -390,7 +390,10 @@ pub async fn add(
             .add_content(
                 Content::new()
                     .set_content_type("text/plaintext")
-                    .set_value(format!("Email: {}\nPassword: {}", request.email, request.password)),
+                    .set_value(format!(
+                        "Email: {}\nPassword: {}",
+                        request.email, request.password
+                    )),
             );
         let sender = Sender::new(key.clone());
         sender.send(&m).await.map_err(ErrorInternalServerError)?;

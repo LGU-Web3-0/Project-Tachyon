@@ -327,7 +327,7 @@ export namespace Task {
 		success: boolean,
 		message?: string
 	}
-		
+
 
 
 
@@ -355,10 +355,6 @@ export namespace Task {
 		document.getElementById("assign-task-modal").classList.add("hidden");
 		window.location.reload();
 	}
-
-    export async function delete_task_onclick(id: number) {
-
-
 
 
 	export async function fake_assign_task_onclick() {
@@ -510,3 +506,4 @@ export namespace Task {
 export function test() {
     console.log('test')
 }
+
