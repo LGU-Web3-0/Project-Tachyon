@@ -20,6 +20,18 @@ pub struct EditTaskResult {
     message: Option<String>,
 }
 
+#[derive(serde::Serialize, serde::Deserialize, Debug)]
+pub struct ResolveTaskResult {
+    success: bool,
+    message: Option<String>,
+}
+
+#[derive(serde::Serialize, serde::Deserialize, Debug)]
+pub struct DeleteTaskResult {
+    success: bool,
+    message: Option<String>,
+}
+
 #[derive(PartialEq, serde::Serialize, serde::Deserialize, Debug, Validate)]
 pub struct AddTaskRequest {
     #[validate(length(min = 1))]
@@ -33,6 +45,17 @@ pub struct AddTaskRequest {
 pub struct EditTaskRequest {
     id: i64,
     updated_description: String,
+}
+
+#[derive(PartialEq, serde::Serialize, serde::Deserialize, Debug, Validate)]
+pub struct ResolveTaskRequest {
+    id: i64,
+    finish_date: DateTimeUtc,
+}
+
+#[derive(PartialEq, serde::Serialize, serde::Deserialize, Debug, Validate)]
+pub struct DeleteTaskRequest {
+    id: i64,
 }
 
 pub async fn add_task(
@@ -176,4 +199,102 @@ pub async fn edit_task(
                 .status(status)
                 .body(x)
         })
+}
+
+pub async fn resolve_task(
+    request: Json<ResolveTaskRequest>,
+    session: Session,
+    data: web::Data<State>,
+) -> Result<HttpResponse> {
+    let mut status = http::StatusCode::OK;
+    let json = match session.get::<UserInfo>("user") {
+        Err(e) => {
+            status = http::StatusCode::INTERNAL_SERVER_ERROR;
+            EditTaskResult {
+                success: false,
+                message: Some(format!("{}", e)),
+            }
+        }
+        Ok(Some(user)) if user.perms.task_management => {
+            let task = entity::task::Entity::find_by_id(request.id)
+                .one(&data.sql_db)
+                .await
+                .map_err(ErrorBadRequest)?
+                .ok_or_else(|| ErrorNotFound("no such task"))?;
+
+            let mut active_task: entity::task::ActiveModel = task.into();
+            let finish: DateTimeUtc = request.finish_date.clone();
+            active_task.finish_date = ActiveValue::Set(Some(finish));
+            match active_task
+                .update(&data.sql_db)
+                .await
+                .map_err(ErrorInternalServerError)
+            {
+                Ok(_) => EditTaskResult {
+                    success: true,
+                    message: None,
+                },
+                Err(e) => EditTaskResult {
+                    success: false,
+                    message: Some(format!("{}", e)),
+                },
+            };
+
+            EditTaskResult {
+                success: true,
+                message: None,
+            }
+        }
+
+        Ok(_) => {
+            status = http::StatusCode::UNAUTHORIZED;
+            EditTaskResult {
+                success: false,
+                message: Some("unauthorized".to_string()),
+            }
+        }
+    };
+
+    simd_json::to_string(&json)
+        .map_err(ErrorInternalServerError)
+        .map(|x| {
+            HttpResponse::Ok()
+                .content_type("application/json")
+                .status(status)
+                .body(x)
+        })
+}
+
+pub async fn delete_task(
+    request: Json<DeleteTaskRequest>,
+    session: Session,
+    data: web::Data<State>,
+) -> Result<HttpResponse> {
+    match session.get::<UserInfo>("user").unwrap_or(None) {
+        None => Ok(HttpResponse::Unauthorized().finish()),
+        Some(_user_info) => {
+            let task = entity::task::Entity::find_by_id(request.id)
+                .one(&data.sql_db)
+                .await
+                .map_err(ErrorBadRequest)?
+                .ok_or_else(|| ErrorNotFound("no such task"))?;
+            task.delete(&data.sql_db)
+                .await
+                .map_err(ErrorInternalServerError)?;
+            let json = DeleteTaskResult {
+                success: true,
+                message: Some("delete task successfully!".to_string()),
+            };
+
+            let status = http::StatusCode::OK;
+            simd_json::to_string(&json)
+                .map_err(ErrorInternalServerError)
+                .map(|x| {
+                    HttpResponse::Ok()
+                        .content_type("application/json")
+                        .status(status)
+                        .body(x)
+                })
+        }
+    }
 }
