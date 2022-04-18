@@ -1,7 +1,7 @@
 use crate::session::UserInfo;
 use crate::{session, IntoAnyhow, State};
 use actix_session::Session;
-use actix_web::error::ErrorInternalServerError;
+use actix_web::error::{ErrorBadRequest, ErrorInternalServerError};
 use actix_web::http::StatusCode;
 use actix_web::web::Json;
 use actix_web::{http, web, HttpResponse, Result};
@@ -12,6 +12,7 @@ use entity::sea_orm::{
 };
 use uuid::Uuid;
 use validator::Validate;
+use entity::sea_orm::DatabaseBackend::Postgres;
 
 pub const WRONG_PASS_ATTEMPT_THRESHOLD: i64 = 5;
 
@@ -246,6 +247,49 @@ pub async fn login(
             verify_pass_and_login(&target_user, &session, &data.sql_db, &request.password).await
         }
     }
+}
+
+#[derive(serde::Serialize, serde::Deserialize, Debug)]
+pub struct UserLockRequest {
+    pub id: i64,
+}
+
+pub async fn lock(
+    request: Json<UserLockRequest>,
+    session: Session,
+    data: web::Data<State>,
+) -> Result<HttpResponse> {
+    if session.get::<UserInfo>("user").unwrap_or(None).is_none() {
+        return Ok(HttpResponse::Unauthorized().finish());
+    }
+    data.sql_db.execute(
+        Statement::from_sql_and_values(
+            Postgres,
+            r#"UPDATE "user" SET wrong_pass_attempt = 100 WHERE id = $1"#,
+            vec![request.id.into()],
+            )
+    ).await
+        .map_err(ErrorBadRequest)?;
+    Ok(HttpResponse::Ok().finish())
+}
+
+pub async fn unlock(
+    request: Json<UserLockRequest>,
+    session: Session,
+    data: web::Data<State>,
+) -> Result<HttpResponse> {
+    if session.get::<UserInfo>("user").unwrap_or(None).is_none() {
+        return Ok(HttpResponse::Unauthorized().finish());
+    }
+    data.sql_db.execute(
+        Statement::from_sql_and_values(
+            Postgres,
+            r#"UPDATE "user" SET wrong_pass_attempt = 0 WHERE id = $1"#,
+            vec![request.id.into()],
+        )
+    ).await
+        .map_err(ErrorBadRequest)?;
+    Ok(HttpResponse::Ok().finish())
 }
 
 pub async fn add(

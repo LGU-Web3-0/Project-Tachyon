@@ -71,7 +71,7 @@
                                     </td>
                                     <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
                                         <img class="rounded"
-                                             src="https://www.gravatar.com/avatar/<%= email_hash %>?s=20"/>
+                                             src="https://www.gravatar.com/avatar/<%= user.email_hash %>?s=20"/>
                                     </td>
                                     <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
                                         <%= user.name %>
@@ -88,6 +88,18 @@
                                     <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
                                         <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full">
                                             Edit
+                                        </button>
+                                        <% if user.is_locked { %>
+                                            <button onclick='Tachyon.UserView.user_unlock(<%= user.id %>)' class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-full">
+                                                Unlock
+                                            </button>
+                                        <% } else { %>
+                                            <button onclick='Tachyon.UserView.user_lock(<%= user.id %>)' class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded-full">
+                                                Lock
+                                            </button>
+                                        <% } %>
+                                        <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-full">
+                                            Delete
                                         </button>
                                     </td>
                                 </tr>
@@ -132,6 +144,7 @@
                                 <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">Add New
                                     User</h3>
                                 <div class="mt-2">
+                                    <p id="error-message" class="text-sm text-red-500 hidden"></p>
                                     <p class="text-sm text-gray-500">New users will added to the system. Please make sure the correctness of the credentials.</p>
                                 </div>
 
