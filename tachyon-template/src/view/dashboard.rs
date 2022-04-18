@@ -17,7 +17,7 @@ pub struct DashboardTemplate {
     pub related_tasks: Vec<RelatedTask>,
     pub total_tasks: usize,
     pub finished_tasks: usize,
-    pub due_works: [usize;6],
+    pub due_works: [usize; 6],
 }
 
 impl DashboardTemplate {
@@ -27,7 +27,7 @@ impl DashboardTemplate {
         related_tasks: Vec<RelatedTask>,
         total_tasks: usize,
         finished_tasks: usize,
-        due_works: [usize;6],
+        due_works: [usize; 6],
     ) -> Self {
         let email_hash = email_hash(email);
         Self {
@@ -36,7 +36,7 @@ impl DashboardTemplate {
             related_tasks,
             total_tasks,
             finished_tasks,
-            due_works
+            due_works,
         }
     }
 }

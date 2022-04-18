@@ -277,12 +277,44 @@ export namespace Task {
 		message?: string
 	}
 
+	export async function edit_task_onclick(id: number){
+		(document.getElementById("task-edit-id") as HTMLInputElement).value = id.toString();
+		document.getElementById("edit-task-modal").classList.remove("hidden")
+	}
+
+
 	export async function add_task_onclick() {
 		document.getElementById("add-task-modal").classList.remove("hidden")
 	}
 
 	export async function cancel_task_onclick() {
-		document.getElementById("add-task-modal").classList.add("hidden")
+		document.getElementById("edit-task-modal").classList.add("hidden")
+	}
+
+	export async function really_edit_task_onclick() {
+		const parsedId = parseInt((document.getElementById("task-edit-id") as HTMLInputElement).value);
+          const descri = (document.getElementById("task-edit-description") as HTMLInputElement).value
+		  let request = {
+			  id: parsedId,
+			  updated_description: descri
+		  };
+		  const response = await window.fetch("/api/task/edit", {
+			  method: 'post',
+			  headers: {
+				  'content-type': 'application/json;charset=UTF-8',
+			  },
+			  body: JSON.stringify(request),
+		  });
+
+		  const result = await response.json()
+		 if (result.success) {
+			 document.getElementById("add-task-modal").classList.add("hidden")
+			 window.location.reload()
+		 }
+		 if (!result.success){
+			 document.getElementById("add-task-modal").classList.add("hidden")
+		 }
+
 	}
 
 	export async function really_add_task_onclick() {
