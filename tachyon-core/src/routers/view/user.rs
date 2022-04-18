@@ -49,7 +49,7 @@ pub async fn handler(
             if let Some(keywords) = &request.search_string {
                 log::debug!("search string: {}", keywords);
                 let expr = Expr::cust_with_values(
-                    "user_search_vector @@ to_tsquery(?)",
+                    "user_search_vector @@ plainto_tsquery(?)",
                     vec![keywords.to_string()],
                 );
                 page = page.filter(expr);
