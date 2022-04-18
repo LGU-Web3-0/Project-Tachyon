@@ -8,8 +8,8 @@ use actix_web::{http, web, HttpResponse, Result};
 use anyhow::anyhow;
 use entity::sea_orm::DatabaseBackend::Postgres;
 use entity::sea_orm::{
-    ActiveModelTrait, ColumnTrait, ConnectionTrait, DatabaseBackend, DatabaseConnection,
-    EntityTrait, ModelTrait, QueryFilter, Statement,
+    ActiveModelTrait, ActiveValue, ColumnTrait, ConnectionTrait, DatabaseBackend,
+    DatabaseConnection, EntityTrait, ModelTrait, QueryFilter, Statement,
 };
 use uuid::Uuid;
 use validator::Validate;
@@ -383,9 +383,107 @@ pub async fn add(
         })
 }
 
+#[derive(serde::Serialize, serde::Deserialize)]
+pub struct UserEditResult {
+    success: bool,
+    message: Option<String>,
+}
+
+#[derive(serde::Serialize, serde::Deserialize)]
+pub struct UserEditRequest {
+    id: i64,
+    email: Option<String>,
+    name: Option<String>,
+    password: Option<String>,
+    pgp_key: Option<String>,
+}
+
+impl UserEditRequest {
+    fn basic_validate(&self) -> bool {
+        let mut status = true;
+        if let Some(email) = &self.email {
+            status = status && validator::validate_email(email);
+        }
+        if let Some(name) = &self.email {
+            status = status && !name.is_empty();
+        }
+        if let Some(password) = &self.password {
+            status = status && !password.is_empty();
+        }
+        if let Some(pgp_key) = &self.pgp_key {
+            status = status && !pgp_key.is_empty();
+        }
+        status
+    }
+    fn apply_patch(self, target: &mut entity::user::ActiveModel) -> Result<()> {
+        if let Some(email) = self.email {
+            target.email = ActiveValue::Set(email);
+        }
+        if let Some(name) = self.name {
+            target.name = ActiveValue::Set(name);
+        }
+        if let Some(password) = self.password {
+            target.password = ActiveValue::Set(
+                entity::user::Model::hash_password(password).map_err(ErrorBadRequest)?,
+            );
+        }
+        if let Some(pgp_key) = self.pgp_key {
+            target.pgp_key = ActiveValue::Set(
+                entity::user::Model::get_public_key(pgp_key).map_err(ErrorBadRequest)?,
+            );
+        }
+        Ok(())
+    }
+}
+
+pub async fn edit(
+    request: Json<UserEditRequest>,
+    session: Session,
+    data: web::Data<State>,
+) -> Result<HttpResponse> {
+    if session.get::<UserInfo>("user").unwrap_or(None).is_none() {
+        return Ok(HttpResponse::Unauthorized().finish());
+    }
+    if !request.basic_validate() {
+        return Ok(HttpResponse::BadRequest().json(UserEditResult {
+            success: false,
+            message: Some("info validation failed".to_string()),
+        }));
+    }
+
+    match entity::user::Entity::find_by_id(request.id)
+        .one(&data.sql_db)
+        .await
+        .map_err(ErrorInternalServerError)?
+    {
+        None => Ok(HttpResponse::BadRequest().json(UserEditResult {
+            success: false,
+            message: Some("no such user".to_string()),
+        })),
+        Some(user) => {
+            let mut active_user: entity::user::ActiveModel = user.into();
+            match request.into_inner().apply_patch(&mut active_user) {
+                Err(e) => Ok(HttpResponse::BadRequest().json(UserEditResult {
+                    success: false,
+                    message: Some(e.to_string()),
+                })),
+                Ok(_) => active_user
+                    .update(&data.sql_db)
+                    .await
+                    .map_err(ErrorInternalServerError)
+                    .map(|_| {
+                        HttpResponse::Ok().json(UserEditResult {
+                            success: true,
+                            message: None,
+                        })
+                    }),
+            }
+        }
+    }
+}
+
 #[cfg(test)]
 mod test {
-
     #[cfg(all(not(miri), test, feature = "integration-test"))]
     #[actix_rt::test]
     #[serial_test::serial]
