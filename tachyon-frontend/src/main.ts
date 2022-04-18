@@ -328,11 +328,50 @@ export namespace Task {
 		message?: string
 	}
 		
-	export async function assign_task_onclick() {
 
+
+
+	export async function assign_task_onclick(task_id: number) {
+
+		const user = (document.getElementById("really-assign-user") as HTMLInputElement).value;
+		const user_id = parseInt(user);
+		const assign_date = new Date().toISOString();
+
+        const request = {
+            task_id,
+			user_id,
+			assign_date,
+
+		};
+        const response = await window.fetch("/api/task/assign", {
+            method: 'post',
+            headers: {
+				'content-type': 'application/json;charset=UTF-8',
+			},
+			body: JSON.stringify(request),
+		});
+		await response.json();
+
+		document.getElementById("assign-task-modal").classList.add("hidden");
+		window.location.reload();
 	}
 
     export async function delete_task_onclick(id: number) {
+
+
+
+
+	export async function fake_assign_task_onclick() {
+        document.getElementById("assign-task-modal").classList.remove("hidden");
+	}
+
+	export async function cancel_assign_task_onclick() {
+		document.getElementById("assign-task-modal").classList.add("hidden");
+	}
+
+
+
+	export async function delete_task_onclick(id: number){
 
         let request = {
             id,

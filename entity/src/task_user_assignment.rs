@@ -1,4 +1,3 @@
-use anyhow::anyhow;
 use sea_orm::entity::prelude::*;
 use sea_orm::ActiveValue;
 use serde::{Deserialize, Serialize};
