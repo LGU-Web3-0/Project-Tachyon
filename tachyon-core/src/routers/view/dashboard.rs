@@ -1,4 +1,3 @@
-use std::ops::Add;
 use crate::session::UserInfo;
 use crate::State;
 use actix_session::Session;
@@ -7,6 +6,7 @@ use actix_web::web::Data;
 use actix_web::{HttpResponse, Result};
 use entity::sea_orm::{ColumnTrait, EntityTrait, PaginatorTrait, QueryFilter};
 use entity::sea_orm::{DatabaseBackend, Statement};
+use std::ops::Add;
 use tachyon_template::view::RelatedTask;
 use tachyon_template::{view::DashboardTemplate, AsyncRenderOnce};
 
@@ -46,11 +46,15 @@ pub async fn get_related_tasks(
     }
     Ok(related_tasks)
 }
-pub async fn get_future_due_works(data: &Data<State>) -> Result<[usize;6]> {
-    let mut res = [0;6];
+pub async fn get_future_due_works(data: &Data<State>) -> Result<[usize; 6]> {
+    let mut res = [0; 6];
     for i in 0..6 {
-        let cond = entity::task::Column::DueDate.gte(chrono::Utc::now().add(chrono::Duration::days(i)))
-            .and( entity::task::Column::DueDate.lte(chrono::Utc::now().add(chrono::Duration::days(i + 1))));
+        let cond = entity::task::Column::DueDate
+            .gte(chrono::Utc::now().add(chrono::Duration::days(i)))
+            .and(
+                entity::task::Column::DueDate
+                    .lte(chrono::Utc::now().add(chrono::Duration::days(i + 1))),
+            );
         let count = entity::task::Entity::find()
             .filter(cond)
             .count(&data.sql_db)
@@ -74,9 +78,16 @@ pub async fn handler(session: Session, data: Data<State>) -> Result<HttpResponse
                 .await
                 .map_err(ErrorInternalServerError)?;
             let tasks = get_related_tasks(&user, &data).await?;
-            DashboardTemplate::new("Dashboard | Project Tachyon", user.email, tasks, total, finished, get_future_due_works(&data).await?)
-                .render_response()
-                .await
+            DashboardTemplate::new(
+                "Dashboard | Project Tachyon",
+                user.email,
+                tasks,
+                total,
+                finished,
+                get_future_due_works(&data).await?,
+            )
+            .render_response()
+            .await
         }
     }
 }
