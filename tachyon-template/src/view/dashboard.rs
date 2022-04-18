@@ -12,6 +12,7 @@ pub struct RelatedTask {
 #[derive(TemplateOnce)]
 #[template(path = "view/dashboard.stpl")]
 pub struct DashboardTemplate {
+    pub is_admin: bool,
     pub title: String,
     pub email_hash: String,
     pub related_tasks: Vec<RelatedTask>,
@@ -22,6 +23,7 @@ pub struct DashboardTemplate {
 
 impl DashboardTemplate {
     pub fn new<S: AsRef<str>, E: AsRef<str>>(
+        is_admin: bool,
         title: S,
         email: E,
         related_tasks: Vec<RelatedTask>,
@@ -31,6 +33,7 @@ impl DashboardTemplate {
     ) -> Self {
         let email_hash = email_hash(email);
         Self {
+            is_admin,
             title: title.as_ref().to_string(),
             email_hash,
             related_tasks,

@@ -79,6 +79,7 @@ pub async fn handler(session: Session, data: Data<State>) -> Result<HttpResponse
                 .map_err(ErrorInternalServerError)?;
             let tasks = get_related_tasks(&user, &data).await?;
             DashboardTemplate::new(
+                user.perms.user_management,
                 "Dashboard | Project Tachyon",
                 user.email,
                 tasks,

@@ -26,6 +26,7 @@ impl TaskItem {
 #[derive(TemplateOnce)]
 #[template(path = "view/task.stpl")]
 pub struct TaskTemplate {
+    pub is_admin: bool,
     pub title: String,
     pub email_hash: String,
     pub items: Vec<TaskItem>,
@@ -35,6 +36,7 @@ pub struct TaskTemplate {
 
 impl TaskTemplate {
     pub fn new<T: AsRef<str>, E: AsRef<str>>(
+        is_admin: bool,
         title: T,
         email: E,
         items: Vec<TaskItem>,
@@ -61,6 +63,7 @@ impl TaskTemplate {
             });
         }
         Self {
+            is_admin,
             title: title.as_ref().to_string(),
             email_hash,
             items,
@@ -120,6 +123,7 @@ impl Comment {
 #[derive(TemplateOnce)]
 #[template(path = "view/task_detail.stpl")]
 pub struct TaskDetailTemplate {
+    pub is_admin: bool,
     title: String,
     email_hash: String,
     email: String,
@@ -148,6 +152,7 @@ impl Render for RawString {
 impl TaskDetailTemplate {
     #[allow(clippy::too_many_arguments)]
     pub fn new<T: AsRef<str>, E: AsRef<str>, N: AsRef<str>, D: AsRef<str>>(
+        is_admin : bool,
         title: T,
         email: E,
         task_id: i64,
@@ -160,6 +165,7 @@ impl TaskDetailTemplate {
         description: D,
     ) -> Self {
         TaskDetailTemplate {
+            is_admin,
             title: title.as_ref().to_string(),
             email_hash: email_hash(email.as_ref()),
             email: email.as_ref().to_string(),

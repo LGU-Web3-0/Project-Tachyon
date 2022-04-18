@@ -93,6 +93,7 @@ pub async fn detail(
         }
     }
     let template = TaskDetailTemplate::new(
+        user.perms.user_management,
         "Task Detail | Project Tachyon",
         user.email.clone(),
         info.id,
@@ -147,6 +148,7 @@ pub async fn handler(
             };
             let converted = convert_task_info(items.into_iter(), &user.email);
             TaskTemplate::new(
+                user.perms.user_management,
                 "MyTasks | Project Tachyon",
                 user.email,
                 converted,

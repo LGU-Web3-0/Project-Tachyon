@@ -29,6 +29,7 @@ pub struct Configs {
     pub cors: Option<CORSConfig>,
     pub fixed_key: Option<String>,
     pub log_level: String,
+    pub admin_name: String,
 }
 
 #[derive(Deserialize, Serialize, Debug, Clone)]

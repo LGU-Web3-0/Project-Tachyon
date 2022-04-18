@@ -58,6 +58,7 @@ pub async fn handler(
                 None
             };
             ObjectTemplate::new(
+                user.perms.user_management,
                 "Object | Project Tachyon",
                 user.email,
                 current,
