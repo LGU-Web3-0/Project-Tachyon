@@ -6,13 +6,13 @@ use actix_web::http::StatusCode;
 use actix_web::web::Json;
 use actix_web::{http, web, HttpResponse, Result};
 use anyhow::anyhow;
+use entity::sea_orm::DatabaseBackend::Postgres;
 use entity::sea_orm::{
     ActiveModelTrait, ColumnTrait, ConnectionTrait, DatabaseBackend, DatabaseConnection,
     EntityTrait, QueryFilter, Statement,
 };
 use uuid::Uuid;
 use validator::Validate;
-use entity::sea_orm::DatabaseBackend::Postgres;
 
 pub const WRONG_PASS_ATTEMPT_THRESHOLD: i64 = 5;
 
@@ -262,13 +262,13 @@ pub async fn lock(
     if session.get::<UserInfo>("user").unwrap_or(None).is_none() {
         return Ok(HttpResponse::Unauthorized().finish());
     }
-    data.sql_db.execute(
-        Statement::from_sql_and_values(
+    data.sql_db
+        .execute(Statement::from_sql_and_values(
             Postgres,
             r#"UPDATE "user" SET wrong_pass_attempt = 100 WHERE id = $1"#,
             vec![request.id.into()],
-            )
-    ).await
+        ))
+        .await
         .map_err(ErrorBadRequest)?;
     Ok(HttpResponse::Ok().finish())
 }
@@ -281,13 +281,13 @@ pub async fn unlock(
     if session.get::<UserInfo>("user").unwrap_or(None).is_none() {
         return Ok(HttpResponse::Unauthorized().finish());
     }
-    data.sql_db.execute(
-        Statement::from_sql_and_values(
+    data.sql_db
+        .execute(Statement::from_sql_and_values(
             Postgres,
             r#"UPDATE "user" SET wrong_pass_attempt = 0 WHERE id = $1"#,
             vec![request.id.into()],
-        )
-    ).await
+        ))
+        .await
         .map_err(ErrorBadRequest)?;
     Ok(HttpResponse::Ok().finish())
 }
