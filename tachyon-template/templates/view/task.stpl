@@ -196,7 +196,7 @@
 										<p class="text-sm text-gray-500">To add a new task, you need to provide its name, deadline and descriptions.</p>
 									</div>
 									<div class="mb-4">
-										<label class="font-bold text-grey-darker block mb-2">User Id</label>
+										<label class="font-bold text-grey-darker block mb-2">Task Id</label>
 										<input id="task-edit-id" type="text"
 								   class="block appearance-none w-full bg-white border border-grey-light hover:border-grey px-2 py-2 rounded shadow"
 		   readonly/>
