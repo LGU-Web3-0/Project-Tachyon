@@ -14,5 +14,6 @@ wildcard = true
 [smtp]
 host = "smtp.office365.com"
 port = 587
+userinfo = "tachyon <a@b.com>"
 username = "a@b.com"
 password = "123456"
