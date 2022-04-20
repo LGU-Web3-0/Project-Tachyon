@@ -11,7 +11,7 @@ pub struct State {
     pub kv_db: sled::Db,
     pub key: Key,
     pub admin_name: String,
-    pub lettre: Option<AsyncSmtpTransport<Tokio1Executor>>,
+    pub lettre: Option<(String, AsyncSmtpTransport<Tokio1Executor>)>,
 }
 
 impl State {
@@ -30,11 +30,14 @@ impl State {
             key,
             admin_name: configs.admin_name.clone(),
             lettre: configs.smtp.as_ref().map(|x| {
-                AsyncSmtpTransport::<Tokio1Executor>::starttls_relay(x.host.as_str())
-                    .unwrap()
-                    .port(x.port)
-                    .credentials(Credentials::new(x.username.clone(), x.password.clone()))
-                    .build()
+                (
+                    x.userinfo.clone(),
+                    AsyncSmtpTransport::<Tokio1Executor>::starttls_relay(x.host.as_str())
+                        .unwrap()
+                        .port(x.port)
+                        .credentials(Credentials::new(x.username.clone(), x.password.clone()))
+                        .build(),
+                )
             }),
         })
     }

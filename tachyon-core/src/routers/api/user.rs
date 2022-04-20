@@ -384,14 +384,10 @@ pub async fn add(
         }
     };
     if json.success {
-        if let Some(smtp) = data.lettre.as_ref() {
+        if let Some((info, smtp)) = data.lettre.as_ref() {
             use lettre::{AsyncTransport, Message};
             let email = Message::builder()
-                .from(
-                    "Schrodinger ZHU <118010469@link.cuhk.edu.cn>"
-                        .parse()
-                        .map_err(ErrorInternalServerError)?,
-                )
+                .from(info.parse().map_err(ErrorInternalServerError)?)
                 .to(format!("{} <{}>", request.name, request.email)
                     .parse()
                     .map_err(ErrorInternalServerError)?)

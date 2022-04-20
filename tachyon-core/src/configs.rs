@@ -25,6 +25,7 @@ pub struct SMTPConfig {
     pub port: u16,
     pub username: String,
     pub password: String,
+    pub userinfo: String,
 }
 
 #[derive(Deserialize, Serialize, Debug)]
