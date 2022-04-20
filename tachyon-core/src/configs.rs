@@ -20,6 +20,14 @@ impl Opt {
 }
 
 #[derive(Deserialize, Serialize, Debug)]
+pub struct SMTPConfig {
+    pub host: String,
+    pub port: u16,
+    pub username: String,
+    pub password: String,
+}
+
+#[derive(Deserialize, Serialize, Debug)]
 pub struct Configs {
     pub db_uri: String,
     pub redis_uri: String,
@@ -30,7 +38,7 @@ pub struct Configs {
     pub fixed_key: Option<String>,
     pub log_level: String,
     pub admin_name: String,
-    pub sendgrid_key: Option<String>,
+    pub smtp: Option<SMTPConfig>,
 }
 
 #[derive(Deserialize, Serialize, Debug, Clone)]

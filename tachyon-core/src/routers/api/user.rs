@@ -383,20 +383,25 @@ pub async fn add(
             }
         }
     };
-    if let Some(key) = data.sendgrid_key.as_ref() {
-        use sendgrid::v3::*;
-        let m = Message::new(Email::new(request.email.as_str()))
-            .set_subject("Tachyon Credential")
-            .add_content(
-                Content::new()
-                    .set_content_type("text/plaintext")
-                    .set_value(format!(
-                        "Email: {}\nPassword: {}",
-                        request.email, request.password
-                    )),
-            );
-        let sender = Sender::new(key.clone());
-        sender.send(&m).await.map_err(ErrorInternalServerError)?;
+    if json.success {
+        if let Some(smtp) = data.lettre.as_ref() {
+            use lettre::{Message, AsyncTransport};
+            let email = Message::builder()
+                .from("Schrodinger ZHU <118010469@link.cuhk.edu.cn>".parse()
+                    .map_err(ErrorInternalServerError)?)
+                .to(format!("{} <{}>", request.name, request.email).parse()
+                    .map_err(ErrorInternalServerError)?)
+                .subject("Tachyon Credential")
+                .body(format!(
+                    "Email: {}\nPassword: {}",
+                    request.email, request.password
+                ))
+                .map_err(ErrorInternalServerError)?;
+
+            if let Err(e) = smtp.send(email).await {
+                log::error!("{}", e);
+            }
+        }
     }
 
     simd_json::to_string(&json)
