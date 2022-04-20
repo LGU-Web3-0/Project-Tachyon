@@ -2,16 +2,16 @@ use crate::configs::Configs;
 use crate::utils::Result;
 use actix_web::cookie::Key;
 use anyhow::anyhow;
-use lettre::{AsyncSmtpTransport, Tokio1Executor};
-use lettre::transport::smtp::authentication::Credentials;
 use entity::sea_orm::{Database, DatabaseConnection};
+use lettre::transport::smtp::authentication::Credentials;
+use lettre::{AsyncSmtpTransport, Tokio1Executor};
 
 pub struct State {
     pub sql_db: DatabaseConnection,
     pub kv_db: sled::Db,
     pub key: Key,
     pub admin_name: String,
-    pub lettre: Option<AsyncSmtpTransport<Tokio1Executor>>
+    pub lettre: Option<AsyncSmtpTransport<Tokio1Executor>>,
 }
 
 impl State {
@@ -35,7 +35,7 @@ impl State {
                     .port(x.port)
                     .credentials(Credentials::new(x.username.clone(), x.password.clone()))
                     .build()
-            })
+            }),
         })
     }
 
@@ -56,7 +56,7 @@ impl State {
             kv_db,
             key,
             admin_name: "admin".to_string(),
-            lettre: None
+            lettre: None,
         })
     }
 }
