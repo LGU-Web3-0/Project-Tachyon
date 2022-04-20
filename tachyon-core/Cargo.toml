@@ -26,7 +26,7 @@ rand = { version = "0.8", features = [
 ]}
 hashbrown = "0.12"
 validator = { version = "0.14", features = ["derive", "phone", "card", "unic"] }
-sendgrid = { version = "0.17", default-features = false, features = ["async", "rustls"] }
+lettre = { version = "0.10.0-rc.5", default-features = false, features = ["smtp-transport", "pool", "tokio1-rustls-tls", "hostname", "builder"] }
 # Object Storage
 sled = { version = "0.34"}
 

@@ -3,13 +3,15 @@ use crate::utils::Result;
 use actix_web::cookie::Key;
 use anyhow::anyhow;
 use entity::sea_orm::{Database, DatabaseConnection};
+use lettre::transport::smtp::authentication::Credentials;
+use lettre::{AsyncSmtpTransport, Tokio1Executor};
 
 pub struct State {
     pub sql_db: DatabaseConnection,
     pub kv_db: sled::Db,
     pub key: Key,
     pub admin_name: String,
-    pub sendgrid_key: Option<String>,
+    pub lettre: Option<AsyncSmtpTransport<Tokio1Executor>>,
 }
 
 impl State {
@@ -27,7 +29,13 @@ impl State {
             kv_db,
             key,
             admin_name: configs.admin_name.clone(),
-            sendgrid_key: configs.sendgrid_key.clone(),
+            lettre: configs.smtp.as_ref().map(|x| {
+                AsyncSmtpTransport::<Tokio1Executor>::starttls_relay(x.host.as_str())
+                    .unwrap()
+                    .port(x.port)
+                    .credentials(Credentials::new(x.username.clone(), x.password.clone()))
+                    .build()
+            }),
         })
     }
 
@@ -48,6 +56,7 @@ impl State {
             kv_db,
             key,
             admin_name: "admin".to_string(),
+            lettre: None,
         })
     }
 }

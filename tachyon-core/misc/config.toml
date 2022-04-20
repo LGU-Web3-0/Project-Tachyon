@@ -1,7 +1,7 @@
-db_uri = "postgres://postgres@postgres/test"
+db_uri = "postgres://postgres@localhost/test"
 server_addr = "0.0.0.0:8000"
 sled_dir = "/sled"
-redis_uri = "redis://redis:6379"
+redis_uri = "redis://localhost:6379"
 static_dir = "static"
 log_level = "debug"
 fixed_key = "1234567812345678123456781234567812345678123456781234567812345678"
@@ -10,3 +10,9 @@ admin_name = "Schrodinger ZHU"
 [cors]
 origin = "*"
 wildcard = true
+
+[smtp]
+host = "smtp.office365.com"
+port = 587
+username = "a@b.com"
+password = "123456"

@@ -18,7 +18,7 @@ impl<T> LoggedUnwrap for Result<T> {
             Ok(x) => x,
             Err(y) => {
                 log::error!("{}", y);
-                panic!("server panics due to above error")
+                panic!("server panics due to above error: {}", y);
             }
         }
     }
