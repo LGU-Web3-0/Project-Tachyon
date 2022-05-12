@@ -11,6 +11,7 @@ macro_rules! test_env {
         match env_logger::try_init_from_env("TACHYON_LOG") {
             _ => (),
         };
+
         let _uuid = uuid::Uuid::new_v4();
         let _state = $crate::Data::new($crate::State::mocked(_uuid).await.unwrap());
         let _session = actix_session::storage::RedisSessionStore::new($crate::test::REDIS_ADDRESS)
@@ -61,6 +62,56 @@ macro_rules! test_env {
             _ => (),
         }
     }};
+}
+#[macro_export]
+macro_rules! with_login_cookie {
+    ($app : expr, $body : expr) => {
+        let req = ::actix_web::test::TestRequest::post()
+            .uri("/api/user/add")
+            .set_json(&crate::routers::api::user::UserAddRequest {
+                name: "Schrodinger ZHU".to_string(),
+                email: "i@zhuyi.fan".to_string(),
+                password: "123456".to_string(),
+                gpg_key: entity::user::KEY_BLOCK.to_string(),
+                #[cfg(feature = "integration-test")]
+                no_session: Some(true),
+            })
+            .to_request();
+        let res: ::actix_web::dev::ServiceResponse<_> =
+            ::actix_web::test::call_service(&$app, req).await;
+        ::log::debug!("user addition result: {:?}", res.status());
+        let req = ::actix_web::test::TestRequest::post()
+            .uri("/api/user/login")
+            .set_json(&crate::routers::api::user::UserLogin {
+                email: "i@zhuyi.fan".to_string(),
+                password: "123456".to_string(),
+                signature: None,
+            })
+            .to_request();
+        let resp: ServiceResponse<_> = test::call_service(&$app, req).await;
+        let mut session_cookie = None;
+        for i in resp.response().cookies() {
+            if i.name() == "tachyon_id" {
+                session_cookie.replace(i);
+            }
+        }
+        for i in 0..20 {
+            let req = ::actix_web::test::TestRequest::post()
+                .uri("/api/user/add")
+                .set_json(&crate::routers::api::user::UserAddRequest {
+                    name: format!("Schrodinger ZHU {}", i),
+                    email: format!("a{}@b.cc", i),
+                    password: "123456".to_string(),
+                    gpg_key: entity::user::KEY_BLOCK.to_string(),
+                    #[cfg(feature = "integration-test")]
+                    no_session: Some(true),
+                })
+                .to_request();
+            ::actix_web::test::call_service(&$app, req).await;
+        }
+        ::log::debug!("user login cookie: {:?}", session_cookie);
+        $body($app, session_cookie.unwrap().into_owned()).await;
+    };
 }
 
 pub struct GPGHelper {

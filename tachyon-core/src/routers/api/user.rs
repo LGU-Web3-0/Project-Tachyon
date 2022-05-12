@@ -19,41 +19,41 @@ pub const WRONG_PASS_ATTEMPT_THRESHOLD: i64 = 5;
 #[derive(serde::Serialize, serde::Deserialize, Debug, Validate)]
 pub struct UserAddRequest {
     #[validate(length(min = 1))]
-    name: String,
+    pub(crate) name: String,
     #[validate(email)]
-    email: String,
+    pub(crate) email: String,
     #[validate(length(min = 1))]
-    password: String,
+    pub(crate) password: String,
     #[validate(length(min = 1))]
-    gpg_key: String,
+    pub(crate) gpg_key: String,
     #[cfg(feature = "integration-test")]
-    no_session: Option<bool>,
+    pub(crate) no_session: Option<bool>,
 }
 
 #[derive(serde::Serialize, serde::Deserialize, Debug)]
 pub struct UserLogin {
-    email: String,
-    password: String,
-    signature: Option<String>,
+    pub(crate) email: String,
+    pub(crate) password: String,
+    pub(crate) signature: Option<String>,
 }
 
 #[derive(serde::Serialize, serde::Deserialize, Debug)]
 pub struct UserAddResult {
-    success: bool,
-    message: Option<String>,
+    pub(crate) success: bool,
+    pub(crate) message: Option<String>,
 }
 
 #[derive(serde::Serialize, serde::Deserialize, Debug)]
 pub struct UserLoginResult {
-    success: bool,
-    signature_requirement: Option<Uuid>,
-    message: Option<String>,
+    pub(crate) success: bool,
+    pub(crate) signature_requirement: Option<Uuid>,
+    pub(crate) message: Option<String>,
 }
 
 #[derive(serde::Serialize, serde::Deserialize, Debug)]
 pub struct UserLogoutResult {
-    success: bool,
-    message: Option<String>,
+    pub(crate) success: bool,
+    pub(crate) message: Option<String>,
 }
 
 impl UserLoginResult {
@@ -572,6 +572,56 @@ mod test {
                 assert_eq!(resp.status(), StatusCode::OK);
             }
         })
+    }
+
+    #[cfg(all(not(miri), test, feature = "integration-test"))]
+    #[actix_rt::test]
+    #[serial_test::serial]
+    async fn it_operates_on_user() {
+        use super::{UserEditRequest, UserIdentification};
+        use crate::StatusCode;
+        use actix_web::cookie::Cookie;
+        use actix_web::dev::ServiceResponse;
+        use actix_web::test;
+
+        crate::test_env!(|app| async move {
+            crate::with_login_cookie!(app, |app, cookie: Cookie<'static>| async move {
+                let req = test::TestRequest::post()
+                    .uri("/api/user/lock")
+                    .set_json(&UserIdentification { id: 5 })
+                    .cookie(cookie.clone())
+                    .to_request();
+                let resp: ServiceResponse<_> = test::call_service(&app, req).await;
+                assert_eq!(resp.status(), StatusCode::OK);
+                let req = test::TestRequest::post()
+                    .uri("/api/user/unlock")
+                    .set_json(&UserIdentification { id: 5 })
+                    .cookie(cookie.clone())
+                    .to_request();
+                let resp: ServiceResponse<_> = test::call_service(&app, req).await;
+                assert_eq!(resp.status(), StatusCode::OK);
+                let req = test::TestRequest::post()
+                    .uri("/api/user/edit")
+                    .set_json(&UserEditRequest {
+                        id: 1,
+                        email: Some("i@zhuyi.fan".to_string()),
+                        name: None,
+                        password: None,
+                        pgp_key: None,
+                    })
+                    .cookie(cookie.clone())
+                    .to_request();
+                let resp: ServiceResponse<_> = test::call_service(&app, req).await;
+                assert_eq!(resp.status(), StatusCode::OK);
+                let req = test::TestRequest::delete()
+                    .uri("/api/user/delete")
+                    .set_json(&UserIdentification { id: 5 })
+                    .cookie(cookie.clone())
+                    .to_request();
+                let resp: ServiceResponse<_> = test::call_service(&app, req).await;
+                assert_eq!(resp.status(), StatusCode::OK);
+            });
+        });
     }
 
     #[cfg(all(not(miri), test, feature = "integration-test"))]
