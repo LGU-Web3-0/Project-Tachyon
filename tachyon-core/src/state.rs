@@ -48,8 +48,8 @@ impl State {
         use migration::MigratorTrait;
 
         let sql_db = Database::connect(crate::test::DB_ADDRESS).await?;
-        Migrator::down(&sql_db, None).await?;
-        Migrator::up(&sql_db, None).await?;
+        Migrator::down(&sql_db, Some(999)).await?;
+        Migrator::up(&sql_db, Some(999)).await?;
         let kv_db = sled::Config::new()
             .path(format!("/tmp/tachyon-mock-test-{}", uuid))
             .open()?;
@@ -58,7 +58,7 @@ impl State {
             sql_db,
             kv_db,
             key,
-            admin_name: "admin".to_string(),
+            admin_name: "Schrodinger ZHU".to_string(),
             lettre: None,
         })
     }

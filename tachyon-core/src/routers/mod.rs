@@ -58,3 +58,46 @@ pub fn routers<S: AsRef<Path>>(static_path: S) -> Scope {
                 .default_handler(fn_service(forbidden)),
         )
 }
+
+#[cfg(test)]
+mod test {
+    use actix_web::dev::ServiceResponse;
+    use actix_web::test;
+
+    #[cfg(all(not(miri), test, feature = "integration-test"))]
+    #[actix_rt::test]
+    #[serial_test::serial]
+    async fn it_gets_front_resources() {
+        crate::test_env!(|app| async move {
+            for i in [
+                "/frontend/tachyon.js",
+                "/frontend/tachyon.js.map",
+                "/frontend/main.css",
+                "/frontend/main.css.map",
+            ] {
+                let req = test::TestRequest::get().uri(i).to_request();
+                let resp: ServiceResponse<_> = test::call_service(&app, req).await;
+                log::debug!("status: {:?}", resp.status());
+                assert!(resp.status().is_success())
+            }
+
+            for i in ["/frontend/aaa", "/frontend/bbb"] {
+                let req = test::TestRequest::get().uri(i).to_request();
+                let resp: ServiceResponse<_> = test::call_service(&app, req).await;
+                assert!(!resp.status().is_success())
+            }
+        });
+    }
+
+    #[cfg(all(not(miri), test, feature = "integration-test"))]
+    #[actix_rt::test]
+    #[serial_test::serial]
+    async fn it_gets_index_page() {
+        crate::test_env!(|app| async move {
+            let req = test::TestRequest::get().uri("/").to_request();
+            let resp: ServiceResponse<_> = test::call_service(&app, req).await;
+            log::debug!("status: {:?}", resp.status());
+            assert!(resp.status().is_success())
+        });
+    }
+}

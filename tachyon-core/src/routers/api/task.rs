@@ -396,9 +396,9 @@ pub async fn assign(
         }
 
         let prepared = entity::task_user_assignment::Model::prepare(
-            req.task_id.clone(),
-            req.user_id.clone(),
-            req.assign_date.clone(),
+            req.task_id,
+            req.user_id,
+            req.assign_date,
         );
         if let Ok(model) = prepared {
             match model.insert(db).await {
