@@ -453,3 +453,120 @@ pub async fn assign(
                 .body(x)
         })
 }
+
+#[cfg(test)]
+mod test {
+
+    #[cfg(all(not(miri), test, feature = "integration-test"))]
+    #[actix_rt::test]
+    #[serial_test::serial]
+    async fn it_operates_on_tasks() {
+        use super::*;
+        use crate::StatusCode;
+        use actix_web::cookie::Cookie;
+        use actix_web::dev::ServiceResponse;
+        use actix_web::test;
+
+        crate::test_env!(|app| async move {
+            crate::with_login_cookie!(app, |app, cookie: Cookie<'static>| async move {
+                for i in 0..50 {
+                    let req = test::TestRequest::post()
+                        .uri("/api/task/add")
+                        .set_json(&AddTaskRequest {
+                            name: format!("Task {}", i),
+                            create_date: chrono::Utc::now(),
+                            due_date: chrono::Utc::now(),
+                            description: "description abc cba".to_string(),
+                        })
+                        .cookie(cookie.clone())
+                        .to_request();
+                    let resp: ServiceResponse<_> = test::call_service(&app, req).await;
+                    assert_eq!(resp.status(), StatusCode::OK);
+                }
+                {
+                    let req = test::TestRequest::get()
+                        .uri("/view/task?page_size=1&page_no=23&search_string=abc")
+                        .cookie(cookie.clone())
+                        .to_request();
+                    let resp: ServiceResponse<_> = test::call_service(&app, req).await;
+                    assert_eq!(resp.status(), StatusCode::OK);
+                }
+                for i in 1..=50 {
+                    let req = test::TestRequest::get()
+                        .uri(&format!("/view/task/{}/detail", i))
+                        .cookie(cookie.clone())
+                        .to_request();
+                    let resp: ServiceResponse<_> = test::call_service(&app, req).await;
+                    assert_eq!(resp.status(), StatusCode::OK);
+                }
+                for i in 1..=50 {
+                    let req = test::TestRequest::post()
+                        .uri("/api/task/edit")
+                        .set_json(&EditTaskRequest {
+                            id: i,
+                            updated_description: "a b c d e f".to_string(),
+                        })
+                        .cookie(cookie.clone())
+                        .to_request();
+                    let resp: ServiceResponse<_> = test::call_service(&app, req).await;
+                    assert_eq!(resp.status(), StatusCode::OK);
+                }
+                for i in 1..=50 {
+                    let req = test::TestRequest::post()
+                        .uri("/api/task/resolve")
+                        .set_json(&ResolveTaskRequest {
+                            id: i,
+                            finish_date: chrono::Utc::now(),
+                        })
+                        .cookie(cookie.clone())
+                        .to_request();
+                    let resp: ServiceResponse<_> = test::call_service(&app, req).await;
+                    assert_eq!(resp.status(), StatusCode::OK);
+                }
+                for i in 1..=50 {
+                    let req = test::TestRequest::post()
+                        .uri("/api/task/comment/add")
+                        .set_json(&AddCommentRequest {
+                            task_id: i,
+                            content: "polo is very handsome".to_string(),
+                        })
+                        .cookie(cookie.clone())
+                        .to_request();
+                    let resp: ServiceResponse<_> = test::call_service(&app, req).await;
+                    assert_eq!(resp.status(), StatusCode::OK);
+                }
+                for i in 1..=50 {
+                    let req = test::TestRequest::post()
+                        .uri("/api/task/comment/delete")
+                        .set_json(&DeleteCommentRequest { comment_id: i })
+                        .cookie(cookie.clone())
+                        .to_request();
+                    let resp: ServiceResponse<_> = test::call_service(&app, req).await;
+                    assert_eq!(resp.status(), StatusCode::OK);
+                }
+                for i in 1..=20 {
+                    let req = test::TestRequest::post()
+                        .uri("/api/task/assign")
+                        .set_json(&AssignTaskRequest {
+                            task_id: i,
+                            user_id: i,
+                            assign_date: chrono::Utc::now(),
+                        })
+                        .cookie(cookie.clone())
+                        .to_request();
+                    let resp: ServiceResponse<_> = test::call_service(&app, req).await;
+                    assert_eq!(resp.status(), StatusCode::OK);
+                }
+                for i in 1..=50 {
+                    let req = test::TestRequest::post()
+                        .uri("/api/task/delete")
+                        .set_json(&DeleteTaskRequest { id: i })
+                        .cookie(cookie.clone())
+                        .to_request();
+                    let resp: ServiceResponse<_> = test::call_service(&app, req).await;
+                    assert_eq!(resp.status(), StatusCode::OK);
+                }
+            });
+        });
+    }
+}
