@@ -1,3 +1,24 @@
+//! I will talk about the UI design here.
+//! Rather than using traditional separation of front-end and backend development archtecture
+//! We use template engine.
+//! The view api is set for trigerring the entry point of template rendering.
+//! <a href="https://github.com/rust-sailfish/sailfish">Our template engine is: Sailfish</a>
+//! The data flow is:
+//! ```bash
+//! Main.js
+//!         \
+//!          \
+//!     RsyncRenderOnce: api for template engine
+//!                      |
+//!                      |
+//!             Load corresponding .stpl to render
+//!                and get render response
+//!          /
+//!         /
+//!   Webpack bundle all things and send to frontend
+//!
+//!
+//!
 #![allow(clippy::too_many_arguments)]
 use actix_web::error::ErrorInternalServerError;
 use actix_web::{HttpResponse, Result};
