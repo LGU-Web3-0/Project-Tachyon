@@ -1,3 +1,6 @@
+//! This is the core api in our project. Which manages the user registry, user login, user logout,
+//! user add,
+
 use crate::session::UserInfo;
 use crate::{session, IntoAnyhow, State};
 use actix_session::Session;
@@ -83,6 +86,25 @@ pub async fn logout(session: Session) -> HttpResponse {
         }),
     }
 }
+
+/// Take this function as an example
+/// The parameter:
+/// *request: Json request
+/// *session: session is the core middleware, which will get the client user information when TCP
+/// connection is established. The request will include a cookie, and the middleware can return the
+/// corresponding session id, so server can get the user information.
+/// data: contain struct State:
+/// ```rust
+/// pub struct State {
+///     pub sql_db: DatabaseConnection,
+///     pub kv_db: sled::Db,
+///     pub key: Key,
+///     pub admin_name: String,
+///     pub lettre: Option<(String, AsyncSmtpTransport<Tokio1Executor>)>,
+/// }
+///
+/// ```
+/// Which contains the important connections
 
 pub async fn login(
     request: Json<UserLogin>,

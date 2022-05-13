@@ -1,3 +1,7 @@
+//! This is the most important component. One of its important usage is to assign to a user.
+//! The user can assign resolve cancel ...
+//!
+
 use crate::session::UserInfo;
 use crate::State;
 use actix_session::Session;
