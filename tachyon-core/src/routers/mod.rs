@@ -1,3 +1,48 @@
+//! Router is core function in the api. It basically works likes this:
+//!
+//! ```bash
+//!               Request
+//! HttpClient --------------> HttpServer
+//!                                |      \
+//!                                |       \ route to
+//!                                |        \
+//!                                |         \            ORM
+//!                                |        Api Handler: ------> PostgresQL
+//!                                |           |                     |
+//!                                            |          Result     | CRUD
+//!                              Return the updated data <------     |
+//!                                           /
+//!                                |         /
+//!                                |        /
+//!                                |       /
+//!                      *if api them return json
+//!                      *if view hand to frontend component to deal and bundle
+//! HttpClient <----------------  and return html css js ...
+//!
+//! ```
+//! The router here is responsible for the route_to function.
+//! Key Implementation:
+//! * The router routes based on the url, which is called a path in nowadays web framework.
+//! As you can see in the parameter of our routers function:
+//! ```rust
+//! pub fn routers<S: AsRef<Path>>(static_path: S) -> Scope {
+//!     web::scope("")               
+//!         .service(api::routers())
+//!         .service(view::routers())
+//!         .route("/frontend/{path}", web::get().to(frontend))
+//!         .route("/", web::get().to(index))
+//!         .service(
+//!             Files::new("/static", static_path.as_ref())
+//!                 .show_files_listing()
+//!                 .files_listing_renderer(forbidden_index)
+//!                 .default_handler(fn_service(forbidden)),
+//!         )
+//! }
+//!
+//! ```
+//! the router then parse the path to get parameter from it.
+//!
+
 mod api;
 mod view;
 

@@ -1,3 +1,7 @@
+//! Our router is RESTful. Which means:
+//! REST stands for Representational State Transfer. To follow it in our routes, we use a convention called RESTful Routing. RESTful routing is a set of standards used in many different languages to create efficient, reusable routes. It aims to map HTTP methods (GET, POST, PATCH, DELETE) and CRUD actions (`Create`, `Read`, `Update`, `Destroy`) together in a conventional pattern. This makes it easier for other developers to understand and navigate an application and results in clean, consistent URL paths for users.
+//!Essentially, RESTful routing is a naming pattern. It asserts that routes completing certain common actions (like creating, updating, or deleting objects) have names and paths that accurately reflect what they're doing, with which CRUD and HTTP verbs, on what type of object.
+
 use actix_web::{web, Scope};
 
 pub mod hello_world;
