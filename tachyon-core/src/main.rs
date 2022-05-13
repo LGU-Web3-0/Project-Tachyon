@@ -104,7 +104,7 @@ where
     }
     Ok(())
 }
-
+///This is the entry point of our project
 #[actix_web::main]
 async fn main() -> anyhow::Result<()> {
     let opt: Opt = Opt::parse();
