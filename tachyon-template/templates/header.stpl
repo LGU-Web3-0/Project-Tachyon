@@ -1,9 +1,9 @@
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<meta name="format-detection" content="telephone=no">
-<link rel="icon" type="image/x-icon" href="/static/logo/icon.png">
-<script src="/frontend/tachyon.js"></script>
-<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.0/styles/default.min.css">
-<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.0/highlight.min.js"></script>
-<link href="/frontend/main.css" rel="stylesheet">
-<title><%= title %></title>
+<meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="format-detection" content="telephone=no" />
+        <link rel="icon" type="image/x-icon" href="/static/logo/icon.png" />
+        <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.0/styles/default.min.css">
+        <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.0/highlight.min.js"></script>
+        <link href="/frontend/main.css" rel="stylesheet" />
+        <script src="/frontend/tachyon.js"></script>
+        <title><%= title %></title>

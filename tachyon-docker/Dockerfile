@@ -11,6 +11,10 @@ replace-with = "tuna" \n\
 registry = "https://mirrors.tuna.tsinghua.edu.cn/git/crates.io-index.git" \n\
 '>$HOME/.cargo/config
 
+RUN echo $'\
+registry = "https://registry.npm.taobao.org" \n\
+'>$HOME/.npmrc
+
 RUN rustup toolchain install nightly
 
 ENV PATH=$PATH:$HOME/.cargo/bin

@@ -7,7 +7,7 @@
 </head>
 
 <body>
-    <main class="bg-gray-100 dark:bg-gray-800 rounded-2xl relative h-screen overflow-hidden relative">
+    <main class="bg-gray-100 dark:bg-gray-800 relative h-screen overflow-hidden relative">
         <div class="flex items-start justify-between">
             <% include!("leftbar.stpl"); %>
             <div class="flex flex-col w-full pl-0 md:p-4 md:space-y-4">
